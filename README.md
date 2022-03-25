@@ -1,5 +1,5 @@
 # rskswap-ui
-
+Project for Swaping RBTC to rWBTC independently from the claim (and the other way round too) 
 ## Project setup
 ```
 yarn install
