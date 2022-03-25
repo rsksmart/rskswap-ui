@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "rskswap-ui",
+    "development": "rskswap-ui-330504"
+  },
+  "targets": {}
+}
