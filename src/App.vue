@@ -1,9 +1,13 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
+  <div id="main">
+    <div id="nav">
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link>
+    </div>
+    <NavBar />
+    <router-view />
+    <Footer />
   </div>
-  <router-view />
 </template>
 
 <style lang="scss">
@@ -28,3 +32,10 @@
   }
 }
 </style>
+<script>
+import NavBar from "@/layouts/NavBar";
+import Footer from "@/layouts/Footer";
+export default {
+  components: { NavBar, Footer },
+};
+</script>
