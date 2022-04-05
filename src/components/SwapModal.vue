@@ -1,8 +1,17 @@
 <template>
-  <h4>swap modal</h4>
-  <div v-if="isOrigin">
-    <RangeInput v-model:value="percentage" step="1" :disabled="false" />
+  <div class="swap-modal-title">
+    <h4>swap modal to cross tokens</h4>
   </div>
+  <div class="modal-body">
+    <div class="network-row">
+      <h3>{{ currentNetwork }} Network</h3>
+    </div>
+    <div>
+      <h3>Swap {{ selectedToken }}</h3>
+      <RangeInput v-model:value="percentage" step="1" :disabled="false" />
+    </div>
+  </div>
+  <div v-if="isOrigin"></div>
 </template>
 
 <script>
