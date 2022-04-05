@@ -2,7 +2,7 @@
 import { reactive } from "vue";
 
 import Web3 from "web3";
-import RLogin from "@rsksmart/rlogin";
+import rLogin from "@rsksmart/rlogin";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
 import { getNetworksAvailable, getNetworksConf } from "@/constants/networks";
@@ -13,13 +13,13 @@ import { ALL_RPC } from "@/constants/rpc";
 // import { blocksToTime } from "@/utils";
 
 // TODO: FIX TYPE ERRORS COMMENTED
-export const store = {
+export default {
   state: reactive({
     web3: Web3,
     provider: null,
     dataVault: null,
     disconnect: () => 0,
-    // rLogin: rLogin,
+    rLogin: rLogin,
     isConnected: false,
     accountAddress: "",
     currentConfig: null,
@@ -99,7 +99,7 @@ export const store = {
   // },
   // todo: add types here
   async initMainSettings(chainId: number, rskConfig: any, sideConfig: any) {
-    const state = store.state;
+    const state = this.state;
     state.chainId = chainId;
     state.rskConfig = rskConfig;
     state.sideConfig = sideConfig;
@@ -123,7 +123,7 @@ export const store = {
     // }
   },
   handleDisconnect() {
-    const state = store.state;
+    const state = this.state;
     if (state.disconnect) state.disconnect();
     state.isConnected = false;
     state.accountAddress = "";
@@ -139,7 +139,7 @@ export const store = {
     const supportedChains = [
       ...new Set(getNetworksAvailable().map((network) => network.networkId)),
     ];
-    return new RLogin({
+    return new rLogin({
       cacheProvider: false,
       providerOptions: {
         walletconnect: {
@@ -153,9 +153,9 @@ export const store = {
     });
   },
   handleLogin() {
-    const state = store.state;
+    const state = this.state;
     state.connectionError = "";
-    const rLoginInstance = store.getRLogin();
+    const rLoginInstance = this.getRLogin();
     return rLoginInstance
       .connect()
       .then(async function (rLoginResponse) {
@@ -177,11 +177,11 @@ export const store = {
         //   store.accountsChanged(...params);
         // });
       })
-      .catch(function (err) {
+      .catch( (err) => {
         console.error(err);
-        store.handleDisconnect();
+        this.handleDisconnect();
         if (!err.includes("Modal closed by user")) {
-          store.state.connectionError = `${err.message}. Login failed. Please try again.`;
+          state.connectionError = `${err.message}. Login failed. Please try again.`;
         }
       });
   },
