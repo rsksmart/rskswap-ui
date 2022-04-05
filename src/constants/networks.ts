@@ -1,6 +1,7 @@
 import * as chainId from "./chainIds";
 
-// todo: check tokens for rBTC and WBTC
+// todo: check tokens for rBTC and WBTC\
+// todo: add proper tokens
 // import {
 //   TEST_NET_KOVAN_TOKENS,
 //   TEST_NET_KOVAN_MAIN_TOKEN,
@@ -18,7 +19,55 @@ const TEST_NET_RSK_CROSS_KOVAN_TOKENS = "TBD";
 const TEST_NET_RSK_CROSS_KOVAN_MAIN_TOKEN = "TBD";
 const TEST_NET_RSK_CROSS_KOVAN_GAS_TOKEN = "TBD";
 
+// todo: refactor this to a different file
+const MAIN_NET_RSK_CROSS_ETHEREUM_TOKENS = [
+  {
+    symbol: "DOC",
+    token: "DOC",
+    name: "Dollar on Chain",
+    typeId: 4,
+    address: "0xe700691da7b9851f2f35f8b8182c69c53ccad9db",
+    decimals: 18,
+    methodType: "RECEIVER",
+    icon: "N/A",
+  },
+  {
+    symbol: "rDAI",
+    token: "rDAI",
+    name: "Rsk BTC",
+    typeId: 4,
+    address: "0x6b1a73d547f4009a26b8485b63d7015d248ad406",
+    decimals: 18,
+    methodType: "RECEIVER",
+    icon: "N/A",
+  },
+];
+
+const MAIN_NET_ETHEREUM_TOKENS = [
+  {
+    symbol: "DOC",
+    token: "DOC",
+    name: "Dollar on Chain",
+    typeId: 4,
+    address: "0xe700691da7b9851f2f35f8b8182c69c53ccad9db",
+    decimals: 18,
+    methodType: "RECEIVER",
+    icon: "N/A",
+  },
+  {
+    symbol: "rDAI",
+    token: "rDAI",
+    name: "Rsk BTC",
+    typeId: 4,
+    address: "0x6b1a73d547f4009a26b8485b63d7015d248ad406",
+    decimals: 18,
+    methodType: "RECEIVER",
+    icon: "N/A",
+  },
+];
+
 import ENVIRONMENTS from "@/constants/environments";
+import { Token } from "@/types/token";
 
 const infuraKey = process.env.VUE_APP_INFURA_KEY;
 
@@ -93,17 +142,19 @@ export const MAIN_NET_RSK_CONFIG = {
   rpc: "https://public-node.rsk.co",
   v2UpdateBlock: 3540341,
   feePercentageDivider: 10_000,
-  // crossToNetwork: MAIN_NET_ETH_CONFIG,
+  crossToNetwork: TEST_NET_KOVAN_CONFIG,
   tokenPrefix: "r",
   env: ENVIRONMENTS.MAINNET,
   // mainToken: MAIN_NET_RSK_CROSS_ETHEREUM_MAIN_TOKEN,
+  mainToken: TEST_NET_RSK_CROSS_KOVAN_MAIN_TOKEN,
   // gasToken: MAIN_NET_RSK_CROSS_ETHEREUM_GAS_TOKEN,
+  gasToken: TEST_NET_RSK_CROSS_KOVAN_GAS_TOKEN,
   isRsk: true,
   isSide: false,
-  // tokens: getTokensWithReceiveToken(
-  // MAIN_NET_RSK_CROSS_ETHEREUM_TOKENS,
-  // MAIN_NET_ETHEREUM_TOKENS
-  // ),
+  tokens: getTokensWithReceiveToken(
+    MAIN_NET_RSK_CROSS_ETHEREUM_TOKENS,
+    MAIN_NET_ETHEREUM_TOKENS
+  ),
 };
 
 export const rskNetworks = [
@@ -133,87 +184,125 @@ export const SWAP_RBTC_PROXY_ADDRESS = {
 
 export const defaultProjectsAddress = [SWAP_RBTC_PROXY_ADDRESS];
 
-// function getReceiveToken(mainToken, sideTokens) {
-//   const receiveTokens = sideTokens.filter(
-//     (token) => token.token == mainToken.token
-//   );
-//   if (receiveTokens.length == 0) {
-//     return {};
-//   }
-//   return receiveTokens[0];
-// }
-//
-// function getTokensWithReceiveToken(mainTokens, sideTokens) {
-//   const mainTokensSort = mainTokens.sort(
-//     (first, second) => first.typeId - second.typeId
-//   );
-//   return mainTokensSort.map((token) => ({
-//     ...token,
-//     receiveToken: getReceiveToken(token, sideTokens),
-//   }));
-// }
-//
-// export function findNetworkByChainId(chainId, crossToNetworkId) {
-//   const networks = getNetworksAvailable();
-//   return networks.find(
-//     (net) =>
-//       net.networkId === chainId &&
-//       net.crossToNetwork.networkId === crossToNetworkId
-//   );
-// }
-//
-// export function getNetworksConf(selectedChainId, prevChainId = null) {
-//   const networksAvailable = getNetworksAvailable();
-//   const networks = networksAvailable.filter(
-//     (net) => net.networkId === selectedChainId
-//   );
-//   if (!networks || networks.length === 0) {
-//     throw new Error(`Network ${selectedChainId} not found`);
-//   }
-//
-//   if (networks.length !== 1) {
-//     if (prevChainId) {
-//       const networkConfig = getNetworksConf(prevChainId, null);
-//       return {
-//         ...networkConfig,
-//         networks,
-//       };
-//     }
-//     return {
-//       ...defaultNetworks[process.env.VUE_APP_ENV],
-//       networks,
-//     };
-//   }
-//
-//   const [network] = networks;
-//   return {
-//     rskConfig: network.isRsk ? network : network.crossToNetwork,
-//     sideConfig: network.isSide ? network : network.crossToNetwork,
-//     networks,
-//   };
-// }
-//
-// export function getEnvironmentNetworks() {
-//   return rskNetworks.filter(
-//     (network) => network.env === process.env.VUE_APP_ENV
-//   );
-// }
-//
-// export function getNetworksAvailable() {
-//   const networksOnEnvironment = getEnvironmentNetworks();
-//   const sideNetworks = networksOnEnvironment.map(
-//     (network) => network.crossToNetwork
-//   );
-//   return [...networksOnEnvironment, ...sideNetworks];
-// }
-//
-// export function getNonDuplicateNetworks() {
-//   const networks = getNetworksAvailable();
-//   const reducedNetworks = networks.reduce((acc, network) => {
-//     if (!acc.has(network.networkId)) {
-//       acc.set(network.networkId, network);
-//     }
-//     return acc;
-//   }, new Map());
-//   return [...reducedNetworks.values()];
-// }
+function getReceiveToken(mainToken: Token, sideTokens: Token[]) {
+  const receiveTokens = sideTokens.filter(
+    (token) => token.token == mainToken.token
+  );
+  if (receiveTokens.length == 0) {
+    return {};
+  }
+  return receiveTokens[0];
+}
+
+function getTokensWithReceiveToken(mainTokens: Token[], sideTokens: Token[]) {
+  const mainTokensSort = mainTokens.sort(
+    (first, second) => first.typeId - second.typeId
+  );
+  return mainTokensSort.map((token) => ({
+    ...token,
+    receiveToken: getReceiveToken(token, sideTokens),
+  }));
+}
+
+export function findNetworkByChainId(
+  chainId: number,
+  crossToNetworkId: number
+) {
+  const networks = getNetworksAvailable();
+  return networks.find(
+    (net) =>
+      net.networkId === chainId &&
+      net.crossToNetwork.networkId === crossToNetworkId
+  );
+}
+
+type NetworkConf = {
+  networkId: number;
+  name: string;
+  localStorageName: string;
+  bridge: string;
+  allowTokens: string;
+  federation: string;
+  explorer: string;
+  explorerTokenTab: string;
+  secondsPerBlock: number;
+  rpc: string;
+  v2UpdateBlock: number;
+  feePercentageDivider: number;
+  crossToNetwork: NetworkConf;
+  tokenPrefix: string;
+  env: string;
+  mainToken: Token;
+  gasToken: Token;
+  isRsk: boolean;
+  isSide: boolean;
+  tokens: [Token];
+  networks: [];
+};
+
+// TODO: set proper type
+export function getNetworksConf(
+  selectedChainId: number,
+  prevChainId: number | null
+): any {
+  const networksAvailable = getNetworksAvailable();
+  const networks = networksAvailable.filter(
+    (net) => net.networkId === selectedChainId
+  );
+  if (!networks || networks.length === 0) {
+    throw new Error(`Network ${selectedChainId} not found`);
+  }
+
+  if (networks.length !== 1) {
+    if (prevChainId) {
+      const networkConfig = getNetworksConf(prevChainId, null);
+      return {
+        ...networkConfig,
+        networks,
+      };
+    }
+    if (process.env.VUE_APP_ENV && defaultNetworks[process.env.VUE_APP_ENV]) {
+      return {
+        ...defaultNetworks[
+          process.env.VUE_APP_ENV ? process.env.VUE_APP_ENV : 0
+        ],
+        networks,
+      };
+    }
+    throw new Error(`VUE APP ENV not found`);
+  }
+
+  const [network] = networks;
+  return {
+    rskConfig: network.isRsk ? network : network.crossToNetwork,
+    sideConfig: network.isSide ? network : network.crossToNetwork,
+    networks,
+  };
+}
+
+// TODO: set proper type
+export function getEnvironmentNetworks(): Array<any> {
+  return rskNetworks.filter(
+    (network) => network.env === process.env.VUE_APP_ENV
+  );
+}
+
+export function getNetworksAvailable(): NetworkConf[] {
+  const networksOnEnvironment: NetworkConf[] = getEnvironmentNetworks();
+  const sideNetworks: NetworkConf[] = networksOnEnvironment.map(
+    (network) => network.crossToNetwork
+  );
+  return [...networksOnEnvironment, ...sideNetworks];
+}
+
+// TODO: set proper type
+export function getNonDuplicateNetworks() {
+  const networks = getNetworksAvailable();
+  const reducedNetworks = networks.reduce((acc, network) => {
+    if (!acc.has(network.networkId)) {
+      acc.set(network.networkId, network);
+    }
+    return acc;
+  }, new Map());
+  return [...reducedNetworks.values()];
+}
