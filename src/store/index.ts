@@ -13,7 +13,7 @@ import { ALL_RPC } from "@/constants/rpc";
 // import { blocksToTime } from "@/utils";
 
 // TODO: FIX TYPE ERRORS COMMENTED
-export default {
+const store:any = {
   state: reactive({
     web3: Web3,
     provider: null,
@@ -158,7 +158,7 @@ export default {
     const rLoginInstance = this.getRLogin();
     return rLoginInstance
       .connect()
-      .then(async function (rLoginResponse) {
+      .then(async function (rLoginResponse : any) {
         state.provider = rLoginResponse.provider;
         state.dataVault = rLoginResponse.dataVault;
         state.disconnect = rLoginResponse.disconnect;
@@ -177,7 +177,7 @@ export default {
         //   store.accountsChanged(...params);
         // });
       })
-      .catch( (err) => {
+      .catch((err : any) => {
         console.error(err);
         this.handleDisconnect();
         if (!err.includes("Modal closed by user")) {
@@ -186,3 +186,4 @@ export default {
       });
   },
 };
+export default store;
