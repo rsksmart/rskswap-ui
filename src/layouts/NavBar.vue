@@ -45,6 +45,7 @@
 
 <script>
 import store from "@/store/index.ts";
+import * as constants from "@/store/constants";
 
 export default {
   name: "NavBar",
@@ -74,7 +75,8 @@ export default {
   },
   methods: {
     connectWalletClick() {
-      return store.handleLogin();
+      // handle login
+      return store.dispatch(`web3Session/${constants.SESSION_CONNECT_WEB3}`, 0);
     },
   },
 };
