@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <section class="container main-div">
     <v-img
       alt="Vue logo"
       src="@/assets/bridge-logo.png"
@@ -8,7 +8,7 @@
     />
     <h1>RSK Swap</h1>
     <SwapTokens />
-  </div>
+  </section>
 </template>
 
 <script lang="ts">
