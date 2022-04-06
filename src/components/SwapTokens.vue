@@ -3,7 +3,7 @@
   <div class="row">
     <div class="col-5">
       <!--      transfermodal-->
-      <SwapModal />
+      <TransferCard title="Origin" />
     </div>
     <div class="col-2">
       <button class="btn btn-link swap-btn">
@@ -13,17 +13,17 @@
     </div>
     <div class="col-5">
       <!--      transfermodal-->
-      <SwapModal />
+      <TransferCard title="Destination" />
     </div>
   </div>
 </template>
 
 <script>
-import SwapModal from "@/components/SwapModal.vue";
+import TransferCard from "@/components/TransferCard.vue";
 export default {
   name: "SwapTokens",
   components: {
-    SwapModal,
+    TransferCard,
   },
   inject: [],
   props: {},
