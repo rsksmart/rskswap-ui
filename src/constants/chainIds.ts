@@ -1,3 +1,5 @@
+import { ChainMap } from "@/types/chains";
+
 // TEST NET
 export const TEST_NET_KOVAN = 42;
 export const TEST_NET_BINANCE = 97;
@@ -24,3 +26,8 @@ export const ALL_CHAINS = [
   ...SUPPORTED_CHAINS_TEST_NET,
   ...SUPPORTED_CHAINS_MAIN_NET,
 ];
+
+export const CHAINS_MAP: ChainMap = {
+  30: "RSK",
+  31: "RSK Test",
+};
