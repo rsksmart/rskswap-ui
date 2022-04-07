@@ -1,19 +1,28 @@
 <template>
   <h3>Swap Tokens</h3>
   <div class="row">
-    <div class="col-5">
+    <div class="offset-2 col-8">
       <!--      transfermodal-->
-      <TransferCard title="Origin" />
-    </div>
-    <div class="col-2">
-      <button class="btn btn-link swap-btn">
-        <i class="fas fa-exchange-alt" />
-      </button>
-      <!--      arrows buttons-->
-    </div>
-    <div class="col-5">
-      <!--      transfermodal-->
-      <TransferCard title="Destination" />
+      <TransferCard title="Swap" />
+      <div class="row justify-content-center mt-4">
+        <button
+          v-if="!hasAllowance"
+          id="approve"
+          class="btn btn-primary mr-3"
+          :disabled="disabledActionButtons"
+          @click="approveClick"
+        >
+          Approve
+        </button>
+        <button
+          id="deposit"
+          class="btn btn-primary"
+          :disabled="disabledActionButtons || !hasAllowance"
+          @click="onSubmit"
+        >
+          Cross tokens
+        </button>
+      </div>    
     </div>
   </div>
 </template>
@@ -68,13 +77,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.swap-btn {
-  font-size: 5em;
-  color: var(--primary);
-}
-.swap-btn:hover {
-  color: var(--primary);
-}
-</style>

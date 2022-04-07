@@ -2,6 +2,12 @@
   <header>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <v-img
+        alt="Vue logo"
+        src="@/assets/bridge-logo.png"
+        width="233"
+        height="188"
+      />
       <div class="w-100">
         <div class="row w-100">
           <div class="col-4 offset-8 d-flex justify-content-end">
