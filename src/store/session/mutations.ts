@@ -2,6 +2,7 @@ import { MutationTree } from "vuex";
 import Web3 from "web3";
 import * as constants from "@/store/constants";
 import { SessionState } from "./types";
+import { CHAINS_MAP } from "@/constants/chainIds";
 
 export const mutations: MutationTree<SessionState> = {
   [constants.SESSION_SET_ACCOUNT]: (state, account: string) => {
@@ -21,5 +22,11 @@ export const mutations: MutationTree<SessionState> = {
   },
   [constants.SESSION_CLOSE_RLOGIN]: async (state) => {
     await state.rLogin?.disconnect();
+  },
+  [constants.SESSION_SET_CURRENT_CHAIN]: (state, chainId: number) => {
+    state.currentChain = {
+      id: chainId,
+      name: CHAINS_MAP[chainId],
+    };
   },
 };

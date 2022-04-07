@@ -6,6 +6,7 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import * as constants from "@/store/constants";
 import { SessionState } from "./types";
 import { RootState } from "../types";
+import { convertToNumber } from "@/utils/address-helpers";
 
 export const actions: ActionTree<SessionState, RootState> = {
   [constants.SESSION_CONNECT_WEB3]: async ({ commit, state }) => {
@@ -30,14 +31,17 @@ export const actions: ActionTree<SessionState, RootState> = {
     rLogin
       .connect()
       .then((rLoginResponse) => {
+        console.log("rlogin res provider", rLoginResponse.provider);
         const web3 = new Web3(rLoginResponse.provider);
-        // todo: check if we really need to make this available globally
-        // Vue.prototype.$web3 = web3;
+
+        // todo: get networks based on chainId?
+        const chainId = convertToNumber(rLoginResponse.provider?.chainId);
+
         commit(constants.SESSION_IS_ENABLED, true);
         commit(constants.SESSION_SET_RLOGIN, rLoginResponse);
         commit(constants.SESSION_SET_RLOGIN_INSTANCE, rLogin);
         commit(constants.SESSION_SET_WEB3_INSTANCE, web3);
-        // return Vue.prototype.$web3.eth.getAccounts();
+        commit(constants.SESSION_SET_CURRENT_CHAIN, chainId);
         return web3.eth.getAccounts();
       })
       .then((accounts) => {

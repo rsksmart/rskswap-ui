@@ -10,7 +10,7 @@
               class="wallet-status navbar-item indicator badge-outline badge-pill"
             >
               <span aria-describedby="tooltip-status" class="fromNetwork">
-                {{ sharedState.currentConfig.name }}
+                {{ chainName }}
               </span>
             </div>
             <div
@@ -18,11 +18,11 @@
               class="wallet-status navbar-item badge-pill text-truncate"
               style="width: 155px"
             >
-              <span id="address">{{ sharedState.accountAddress }}</span>
+              <span id="address">{{ sharedState.web3Session.account }}</span>
             </div>
           </div>
           <div
-            v-if="!sharedState.isConnected"
+            v-if="!isConnected"
             id="navbarResponsive"
             class="navbar-collapse collapse"
           >
@@ -68,9 +68,12 @@ export default {
       return this.sharedState.networksAvailable;
     },
     isConnected() {
-      return (
-        this.sharedState.isConnected && !this.sharedState.preSettingsEnabled
-      );
+      console.log("enabled", this.sharedState.web3Session?.enabled);
+      return this.sharedState.web3Session?.enabled;
+      // && !this.sharedState.preSettingsEnabled
+    },
+    chainName() {
+      return this.sharedState.web3Session?.currentChain?.name;
     },
   },
   methods: {

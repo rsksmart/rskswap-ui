@@ -11,6 +11,7 @@ export const state: SessionState = {
   enabled: false,
   rLogin: undefined,
   rLoginInstance: undefined,
+  currentChain: undefined,
 };
 
 const namespaced = true;
