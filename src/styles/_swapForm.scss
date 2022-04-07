@@ -222,3 +222,12 @@ input.transfer-different-address:focus {
 .holder {
   height: 3.7em;
 }
+
+.swap-btn {
+  font-size: 3em;
+  color: var(--primary);
+}
+
+.swap-btn:hover {
+  color: var(--primary);
+}

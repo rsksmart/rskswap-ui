@@ -29,5 +29,5 @@ export const ALL_CHAINS = [
 
 export const CHAINS_MAP: ChainMap = {
   30: "RSK",
-  31: "RSK Test",
+  31: "RSK Testnet",
 };
