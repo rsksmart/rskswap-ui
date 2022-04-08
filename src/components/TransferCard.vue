@@ -60,8 +60,8 @@
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="offset-2 col-8">
+      <div class="row justify-content-center">
+        <div class="col-6">
           <div class="form-group amount">
             <label class="amount-label" for="receive-amount">Amount</label>
             <input
@@ -75,7 +75,7 @@
               @input="handleChangeAmount"
             />
             <div>
-              <h3>balance {{ originBalance }}</h3>
+              <h3>balance {{ originBalance() }}</h3>
               <RangeInput
                 v-model:value="percentage"
                 step="1"
@@ -187,11 +187,14 @@ export default {
         : this.selectedToken;
     },
     originToken() {
-      return RBTC_TOKEN;
-    },
-    destinationToken() {
       return RKOVWBTC_TOKEN;
     },
+    destinationToken() {
+      return RBTC_TOKEN;
+    },
+    connectedAddress() {
+      return this.sharedState.web3Session.account
+    },    
   },
   // computed() {},
   watch: {
@@ -201,7 +204,7 @@ export default {
     },
   },
   methods: {
-    async originBalance() {
+    originBalance() {
       if (this.sharedState.web3Session.enabled) {
         return this.sharedState.web3Session.web3.eth.getBalance(
           this.originToken.address

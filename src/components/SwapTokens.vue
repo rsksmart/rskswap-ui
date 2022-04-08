@@ -1,7 +1,7 @@
 <template>
   <h3>Swap Tokens</h3>
-  <div class="row">
-    <div class="offset-2 col-8">
+  <div class="row justify-content-center">
+    <div class="col-6">
       <!--      transfermodal-->
       <TransferCard title="Swap" />
       <div class="row justify-content-center mt-4">
@@ -35,7 +35,9 @@ export default {
     TransferCard,
   },
   inject: [],
-  props: {},
+  props: {
+
+  },
   emits: [""],
   data() {
     return {
