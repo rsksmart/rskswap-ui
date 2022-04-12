@@ -17,27 +17,14 @@
                 {{ originToken.symbol }}
               </a>
             </div>
-            <!--            <div-->
-            <!--              v-if="currentNetwork && isOrigin"-->
-            <!--              class="dropdown-menu"-->
-            <!--              aria-labelledby="dropdownMenuButton"-->
-            <!--            >-->
-            <!--              <li v-for="token in tokens" :key="token.token">-->
-            <!--                <a class="dropdown-item" href="#" @click="selectToken(token, $event)">-->
-            <!--                  <span><img :src="token.icon" class="token-logo" /></span>-->
-            <!--                  {{ token.symbol }}-->
-            <!--                </a>-->
-            <!--              </li>-->
-            <!--            </div>-->
-          </div>
-          <div class="invalid-feedback-container">
-            <div class="invalid-feedback" name="tokenAddress">
-              {{ selectedTokenError }}
-            </div>
           </div>
         </div>
         <div class="col-2">
-          <button class="btn btn-link swap-btn">
+          <button
+            class="btn btn-link swap-btn"
+            @click="changeSwap"
+            :disabled="!walletConnected"
+          >
             <i class="fas fa-exchange-alt swap-btn" />
           </button>
         </div>
@@ -53,11 +40,6 @@
               </a>
             </div>
           </div>
-          <div class="invalid-feedback-container">
-            <div class="invalid-feedback" name="tokenAddress">
-              {{ selectedTokenError }}
-            </div>
-          </div>
         </div>
       </div>
       <div class="row justify-content-center">
@@ -70,17 +52,15 @@
               class="form-control text-center align-center"
               type="number"
               min="0"
-              :value="amount"
-              :disabled="!currentNetwork || !isOrigin || !selectedToken?.token"
-              @input="handleChangeAmount"
+              :value="sourceAmount"
+              :disabled="!walletConnected || !isOrigin || !selectedToken?.token"
+              @input="(e) => handleChangeAmount(e, 'source')"
             />
             <div>
-              <h3>balance {{ originBalance() }}</h3>
-              <RangeInput
-                v-model:value="percentage"
-                step="1"
-                :disabled="!currentNetwork || !selectedToken?.token"
-              />
+              <h3>balance {{ currentBalance }}</h3>
+            </div>
+            <div>
+              <h3>amount to receive {{ destinationAmount }}</h3>
             </div>
             <!--            <div v-else class="holder"></div>-->
           </div>
@@ -93,16 +73,16 @@
           </label>
           <div
             class="form-group transfer-address d-flex"
-            :class="{ disabled: disabled }"
+            :class="{ disabled: !walletConnected }"
           >
             <div
               class="address-container"
               :class="{
                 'col-12': isOrigin,
                 'col-6': !isOrigin,
-                active: typeDestinationAddress === 'connected',
+                active: walletConnected,
               }"
-              @click="selectAddressType('connected', $event)"
+              @click="setConnectedAddress()"
             >
               <div>Connected Address:</div>
               <div>{{ connectedAddress }}</div>
@@ -110,16 +90,15 @@
             <div
               v-if="!isOrigin"
               class="col-6 address-container"
-              :class="{ active: typeDestinationAddress === 'different' }"
-              @click="selectAddressType('different', $event)"
+              :class="{ active: !isOrigin }"
             >
               <div>Different Address</div>
               <div>
                 <input
                   type="text"
                   class="form-control transfer-different-address"
-                  :disabled="typeDestinationAddress === 'connected' || disabled"
-                  :readonly="typeDestinationAddress === 'connected'"
+                  :disabled="isOrigin || !walletConnected"
+                  :readonly="isOrigin"
                   @input="handleChangeAddress"
                 />
               </div>
@@ -135,18 +114,17 @@
 </template>
 
 <script>
-import RangeInput from "@/components/RangeInput.vue";
 import { RBTC_TOKEN, RKOVWBTC_TOKEN } from "@/constants/tokens/tokens";
 import store from "@/store/index.ts";
 
 export default {
   name: "TransferCard",
-  components: {
-    RangeInput,
-  },
+  components: {},
   props: {
-    amount: {
-      type: Number,
+    sourceAmount: {
+      required: true,
+    },
+    destinationAmount: {
       required: true,
     },
     address: {
@@ -169,7 +147,7 @@ export default {
       required: true,
     },
   },
-  emits: [],
+  emits: ["update:source-amount", "update:destination-amount"],
   data() {
     return {
       // sharedState: store.state,
@@ -178,6 +156,10 @@ export default {
       selectedToken: null,
       networks: [],
       percentage: 0,
+      currentBalance: 0,
+      destinationToken: RBTC_TOKEN,
+      originToken: RKOVWBTC_TOKEN,
+      selectedAddress: this.connectedAddress || "",
     };
   },
   computed: {
@@ -186,30 +168,50 @@ export default {
         ? this.token
         : this.selectedToken;
     },
-    originToken() {
-      return RKOVWBTC_TOKEN;
-    },
-    destinationToken() {
-      return RBTC_TOKEN;
-    },
     connectedAddress() {
-      return this.sharedState.web3Session.account
-    },    
-  },
-  // computed() {},
-  watch: {
-    percentage(val) {
-      console.log("percentage changed!");
-      console.error("need to implement!");
+      return this.sharedState.web3Session.account;
+    },
+    isOrigin() {
+      return this.connectedAddress === this.selectedAddress;
+    },
+    walletConnected() {
+      return this.sharedState.web3Session?.enabled;
     },
   },
+  watch: {},
   methods: {
-    originBalance() {
-      if (this.sharedState.web3Session.enabled) {
+    // todo: add types here
+    handleChangeAmount(
+      event,
+      // event: Event,
+      amountType
+      // amountType: "source" | "destination"
+      // ): void {
+    ) {
+      // TODO: add update of destination amount
+      this.$nextTick(() =>
+        this.$emit(`update:${amountType}-amount`, event.target.value)
+      );
+    },
+    async getOriginBalance() {
+      if (this.walletConnected) {
         return this.sharedState.web3Session.web3.eth.getBalance(
           this.originToken.address
         );
       }
+      return 0;
+    },
+    async changeSwap() {
+      const _destinationToken = this.originToken;
+      this.originToken = this.destinationToken;
+      this.destinationToken = _destinationToken;
+      this.currentBalance = await this.getOriginBalance();
+    },
+    handleChangeAddress($event) {
+      this.selectedAddress = $event.target.value;
+    },
+    setConnectedAddress() {
+      this.selectedAddress = this.connectedAddress;
     },
   },
 };
