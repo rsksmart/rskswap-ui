@@ -14,3 +14,5 @@ export const RKOVWBTC_TOKEN = {
   symbol: "WBTC",
   address: "0xb8aE2CB769255359190fBcE89d3aD38687da5e65",
 };
+
+export const ALL_TOKENS = [RBTC_TOKEN, RKOVWBTC_TOKEN];

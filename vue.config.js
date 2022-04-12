@@ -1,22 +1,18 @@
 const { version } = require('./package.json')
-const webpack = require('webpack')
 const path = require('path')
 
 module.exports = {
-  lintOnSave: false,
-  transpileDependencies: ['vuetify'],
-  configureWebpack: {
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, 'src'),
+    css: {
+    loaderOptions: {
+      sass: {
+        additionalData: `
+          @import "@/assets/scss/_variables.scss";
+        `,
       },
-      extensions: ['.png'],
-    },
-    output: {
-      filename: `[name]-${version}.[hash].bundle.js`,
     },
   },
-
+  lintOnSave: false,
+  transpileDependencies: ['vuetify'],
   pluginOptions: {
     vuetify: {
       // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vuetify-loader
