@@ -1,16 +1,20 @@
 <template>
   <h3>Swap Tokens</h3>
-  <div class="row">
-    <div class="offset-2 col-8">
+  <div class="row justify-content-center">
+    <div class="col-6">
       <!--      transfermodal-->
-      <TransferCard title="Swap" />
+      <TransferCard
+        v-model:sourceAmount="sourceAmount"
+        v-model:destinationAmount="destinationAmount"
+        title="Swap"
+      />
       <div class="row justify-content-center mt-4">
         <button
           v-if="!hasAllowance"
           id="approve"
           class="btn btn-primary mr-3"
           :disabled="disabledActionButtons"
-          @click="approveClick"
+          @click="onApprove"
         >
           Approve
         </button>
@@ -22,12 +26,15 @@
         >
           Cross tokens
         </button>
-      </div>    
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import BigNumber from "bignumber.js";
+
+import store from "@/store/index.ts";
 import TransferCard from "@/components/TransferCard.vue";
 export default {
   name: "SwapTokens",
@@ -39,10 +46,23 @@ export default {
   emits: [""],
   data() {
     return {
+      sourceAmount: new BigNumber(0),
+      destinationAmount: new BigNumber(0),
+      web3Session: store.state.web3Session,
       error: "",
     };
   },
-  computed: {},
+  computed: {
+    disabledActionButtons() {
+      return (
+        // todo: check other cases to disable it
+        !this.web3Session?.enabled ||
+        this.showSpinner ||
+        this.sourceAmount < 0 ||
+        this.destinationAmount < 0
+      );
+    },
+  },
   watch: {},
   methods: {
     async handleChangeNetwork() {
@@ -54,9 +74,35 @@ export default {
     switchSwapTokens() {
       console.error("not implemented!");
     },
-    approve() {
-      // todo: this might not be needed
-      console.error("not implemented!");
+    async onApprove(event) {
+      // TODO: fetch alllowance on connect - different function though-
+      event.preventDefault();
+
+      // get web3
+      if (!this.web3Session || !this.web3Session?.enabled) {
+        console.error("web3 session not instantiated or connected!");
+        return;
+      }
+
+      // todo: get token address from TransferCard component
+      const tokenAddress = "test";
+      try {
+        this.showSpinner = true;
+        const receipt = await this.erc20TokenInstance.approve(tokenAddress, {
+          from: this.web3Session.accountAddress,
+          gas: 70_000,
+        });
+        console.info("approval receipt", receipt);
+
+        // set alloance to true
+        this.showSpinner = false;
+      } catch (err) {
+        // set alloance to true
+        this.showSpinner = false;
+
+        console.error("approval error: ", err);
+        this.error = `Couldn't approve. ${err?.message}`;
+      }
     },
     submit() {
       console.error("not implemented!");
