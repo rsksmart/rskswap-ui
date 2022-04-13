@@ -11,12 +11,11 @@ export const state: SessionState = {
   enabled: false,
   rLogin: undefined,
   rLoginInstance: undefined,
-  currentChain: undefined,
 };
 
 const namespaced = true;
 
-export const web3Session: Module<SessionState, RootState> = {
+export const session: Module<SessionState, RootState> = {
   namespaced,
   state,
   getters,

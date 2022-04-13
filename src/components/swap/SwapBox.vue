@@ -8,20 +8,20 @@
       <article class="box-body">
         <div class="currency-input">
           <div class="input-holder">
-            <SelectTokenModal v-model="swapFrom.address" />
+            <SelectTokenModal v-model="swapFrom" />
             <input placeholder="0.0" v-model="swapFrom.value" />
           </div>
           <p class="input-note" v-if="walletConnected && swapFrom.address">
-            Balance: 0 {{ getTokenByAddress(swapFrom.address).symbol }}
+            Balance: {{ this.swapFrom.balance }} {{ getTokenByAddress(swapFrom.address).symbol }}
           </p>
         </div>
         <div class="currency-input">
           <div class="input-holder">
-            <SelectTokenModal v-model="swapTo.address" />
+            <SelectTokenModal v-model="swapTo" />
             <input placeholder="0.0" v-model="swapTo.value" />
           </div>
           <p class="input-note" v-if="walletConnected && swapTo.address">
-            Balance: 0 {{ getTokenByAddress(swapTo.address).symbol }}
+            Balance: {{ this.swapTo.balance }} {{ getTokenByAddress(swapTo.address).symbol }}
           </p>
         </div>
       </article>
@@ -30,7 +30,7 @@
         v-if="!hasAllowance"
         id="approve"
         class="btn btn-primary mr-3"
-        :disabled="disabledActionButtons"
+        :disabled="!walletConnected && swapFrom.address"
         @click="onApprove"
       >
         Approve
@@ -38,10 +38,10 @@
       <button
         id="deposit"
         class="btn btn-primary"
-        :disabled="disabledActionButtons || !hasAllowance"
+        :disabled="!walletConnected || !hasAllowance"
         @click="onSubmit"
       >
-        Cross tokens
+        Swap tokens
       </button>
     </div>        
     </section>
@@ -52,14 +52,11 @@
 import { defineComponent } from "vue";
 import Button from "@/components/core/Button.vue";
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
-import store from "@/store/index.ts";
+import { createNamespacedHelpers } from "vuex";
 
-// TODO: MOVE to a "hook" like approach
-// import { createNamespacedHelpers } from "vuex";
-
-// const { mapState, mapGetters, mapActions } = createNamespacedHelpers(
-//   "WalletModule"
-// );
+const { mapState, mapGetters, mapActions } = createNamespacedHelpers(
+  "session"
+);
 
 export default defineComponent({
   name: "SwapBox",
@@ -67,29 +64,62 @@ export default defineComponent({
     Button,
     SelectTokenModal,
   },
+  watch: {
+    async swapFrom(model){
+      if(model){
+        const tokenAbi = [{
+          "constant": true,
+          "inputs": [
+            {
+              "name": "_owner",
+              "type": "address"
+            }
+          ],
+          "name": "balanceOf",
+          "outputs": [
+            {
+              "name": "balance",
+              "type": "uint256"
+            }
+          ],
+          "payable": false,
+          "type": "function"
+        }];
+        const tokenInst = new this.web3.eth.Contract(tokenAbi, model.address);
+        const balance = await tokenInst.methods.balanceOf(this.account).call();
+        this.swapFrom.balance = this.web3.utils.fromWei(balance);      
+      }
+      return 0;
+    },
+    async swapTo(model){
+      if(model){
+        this.swapTo.balance = this.web3.utils.fromWei(await this.web3.eth.getBalance(this.account));      
+      }
+      return 0;
+    }    
+  },
   data() {
     return {
-      sharedState: store.state,
-
       swapFrom: {
         address: "",
+        balance: 0,
         value: "",
       },
       swapTo: {
         address: "",
+        balance: 0,
         value: "",
       },
     };
   },
   computed: {
-    connectedAddress() {
-      return this.sharedState.web3Session.account;
-    },
-    //...mapState(["accountAddress"]),
-    allTokens() { return ALL_TOKENS }, // TODO: Tokens should come from a non hardcoded list (eg. from the allowed tokens in swap contract)
+    ...mapState(["enabled"]),
+    ...mapState(["account"]),
+    ...mapState(["web3"]),
+    ...mapGetters(["allTokens"]),
     walletConnected() {
-      return this.sharedState.web3Session?.enabled;
-    },
+      return this.enabled;
+    },    
   },
   methods: {
     getTokenByAddress(address) {

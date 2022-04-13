@@ -6,14 +6,14 @@
       rounded
       @click="openModal"
     >
-      <template v-if="modelValue && selectedToken">
+      <template v-if="modelValue.address && selectedToken">
         <img
           class="token-image"
-          :src="selectedToken.logoURI"
+          :src="selectedToken.icon"
           :alt="`${selectedToken.name} logo`"
         />
         <h3 class="token-name">
-          {{ selectedToken.symbol }}
+          {{ selectedToken.token }}
         </h3>
       </template>
       <template v-else>
@@ -52,11 +52,9 @@
 import Modal from "@/components/core/Modal.vue";
 import Button from "@/components/core/Button.vue";
 import SelectToken from "@/components/shared/select-token/SelectToken.vue";
-import store from "@/store/index.ts";
+import { createNamespacedHelpers } from "vuex";
 
-// import { createNamespacedHelpers } from "vuex";
-
-// const { mapGetters } = createNamespacedHelpers("WalletModule");
+const { mapGetters, mapState } = createNamespacedHelpers("session");
 export default {
   name: "SelectTokenModal",
   components: {
@@ -66,22 +64,22 @@ export default {
   },
   props: {
     modelValue: {
-      type: String,
     },
   },
   data() {
     return {
-      sharedState: store.state,
+      manageTokenListsVisibility: false
     };
   },
   computed: {
+    ...mapState(["enabled"]),
+    ...mapState(["account"]),
+    ...mapGetters(["allTokens"]), 
     selectedToken() {
-      return this.allTokens.find((token) => token.address === this.modelValue);
+      return this.allTokens.find((token) => token.address === this.modelValue.address);
     },
-    allTokens() { return ALL_TOKENS }, // TODO: Tokens should come from a non hardcoded list (eg. from the allowed tokens in swap contract)
-
     walletConnected() {
-      return this.sharedState.web3Session?.enabled;
+      return this.enabled;
     },
   },
   methods: {
@@ -98,9 +96,9 @@ export default {
     closeManageTokenLists() {
       this.manageTokenListsVisibility = false;
     },
-    selectToken(token) {
-      if (token.address !== this.modelValue) {
-        this.$emit("update:modelValue", token.address);
+    async selectToken(token) {
+      if (token.address !== this.modelValue.address) {
+        this.$emit("update:modelValue", token);
         this.hideModal();
       }
     },
@@ -140,7 +138,7 @@ export default {
     text-transform: uppercase;
     .full-name {
       font-size: 12px;
-      color: $gray;
+      color: black;
       display: block;
       font-weight: 400;
     }

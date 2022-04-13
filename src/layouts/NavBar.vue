@@ -24,7 +24,7 @@
               class="wallet-status navbar-item badge-pill text-truncate"
               style="width: 155px"
             >
-              <span id="address">{{ sharedState.web3Session.account }}</span>
+              <span id="address">{{ this.account }}</span>
             </div>
           </div>
           <div
@@ -50,42 +50,36 @@
 </template>
 
 <script>
-import store from "@/store/index.ts";
 import * as constants from "@/store/constants";
+import { createNamespacedHelpers } from "vuex";
 
+const { mapState, mapGetters, mapActions } = createNamespacedHelpers(
+  "session"
+);
 export default {
   name: "NavBar",
   data() {
     return {
-      sharedState: store.state,
       sideNetworkConfig: null,
     };
   },
   computed: {
-    sideConfig: {
-      get: function () {
-        return store.state.sideConfig;
-      },
-      set: function (value) {
-        this.sideNetworkConfig = value;
-      },
-    },
-    networks() {
-      return this.sharedState.networksAvailable;
-    },
+    ...mapState(["enabled"]),
+    ...mapState(["account"]),
+    ...mapState(["currentChain"]),
     isConnected() {
-      console.log("enabled", this.sharedState.web3Session?.enabled);
-      return this.sharedState.web3Session?.enabled;
-      // && !this.sharedState.preSettingsEnabled
+      console.log("enabled", this.enabled);
+      return this.enabled;
     },
     chainName() {
-      return this.sharedState.web3Session?.currentChain?.name;
+      return this.currentChain?.name;
     },
-  },
+  },  
   methods: {
+    ...mapActions([constants.SESSION_CONNECT_WEB3]),
     connectWalletClick() {
       // handle login
-      return store.dispatch(`web3Session/${constants.SESSION_CONNECT_WEB3}`, 0);
+      return this.SESSION_CONNECT_WEB3()
     },
   },
 };

@@ -75,7 +75,7 @@ export default defineComponent({
   font-weight: 500;
   border: 1px solid transparent;
   background-color: $gray;
-  color: #fff;
+  color: black;
   line-height: 1;
   &.no-padding {
     padding: 0;
