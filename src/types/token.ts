@@ -5,5 +5,6 @@ export interface Token {
   typeId: number;
   decimals: number;
   icon: string;
+  type: "ERC20" | "NATIVE";
   address?: string;
 }
