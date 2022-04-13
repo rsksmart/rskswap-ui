@@ -25,7 +25,7 @@
             class="token-button"
             v-for="token in allTokens.slice(0, 6)"
             :key="token.token"
-            :disabled="token.address === modelValue"
+            :disabled="token.address === modelValue.address"
             @click="selectToken(token)"
           >
             <img
@@ -43,7 +43,7 @@
     <ul class="currencies-list">
       <template v-for="token in allTokens">
         <li
-          :class="['token-item', { selected: token.address === modelValue }]"
+          :class="['token-item', { selected: token.address === modelValue.address }]"
           @click="selectToken(token)"
           :key="token.token"
           v-if="isTokenVisible(token)"
@@ -67,13 +67,10 @@
 import Button from "@/components/core/Button.vue";
 import Input from "@/components/core/Input.vue";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
-import { ALL_TOKENS } from '@/constants/tokens/tokens';
-import store from "@/store/index.ts";
-
 // TODO: Move to a "hook" like state
-// import { createNamespacedHelpers } from "vuex";
+import { createNamespacedHelpers } from "vuex";
 
-// const { mapState, mapGetters } = createNamespacedHelpers("WalletModule");
+const { mapState, mapGetters } = createNamespacedHelpers("session");
 export default {
   name: "SelectToken",
   components: {
@@ -83,20 +80,20 @@ export default {
   },
   props: {
     modelValue: {
-      type: String,
     },
   },
   data() {
     return {
-      sharedState: store.state,
       searchText: "",
     };
   },
   computed: {
+    ...mapState(["enabled"]),
+    ...mapState(["account"]),
+    ...mapGetters(["allTokens"]),    
     connectedAddress() {
-      return this.sharedState.web3Session.account;
+      return this.account;
     },
-    allTokens() { return ALL_TOKENS;},
   },
   methods: {
     selectToken(token) {

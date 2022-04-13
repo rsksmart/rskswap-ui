@@ -75,30 +75,17 @@
             class="form-group transfer-address d-flex"
             :class="{ disabled: !walletConnected }"
           >
-            <div
-              class="address-container"
-              :class="{
-                'col-12': isOrigin,
-                'col-6': !isOrigin,
-                active: walletConnected,
-              }"
-              @click="setConnectedAddress()"
-            >
+            <div class="col-6 address-container" @click="setConnectedAddress()">
               <div>Connected Address:</div>
               <div>{{ connectedAddress }}</div>
             </div>
-            <div
-              v-if="!isOrigin"
-              class="col-6 address-container"
-              :class="{ active: !isOrigin }"
-            >
+            <div class="col-6 address-container" :class="{ active: !isOrigin }">
               <div>Different Address</div>
               <div>
                 <input
                   type="text"
                   class="form-control transfer-different-address"
-                  :disabled="isOrigin || !walletConnected"
-                  :readonly="isOrigin"
+                  :disabled="!walletConnected"
                   @input="handleChangeAddress"
                 />
               </div>
@@ -115,7 +102,10 @@
 
 <script>
 import { RBTC_TOKEN, RKOVWBTC_TOKEN } from "@/constants/tokens/tokens";
-import store from "@/store/index.ts";
+
+import { createNamespacedHelpers } from "vuex";
+
+const { mapState } = createNamespacedHelpers("session");
 
 export default {
   name: "TransferCard",
@@ -150,8 +140,6 @@ export default {
   emits: ["update:source-amount", "update:destination-amount"],
   data() {
     return {
-      // sharedState: store.state,
-      sharedState: store.state,
       tokens: [RBTC_TOKEN, RKOVWBTC_TOKEN],
       selectedToken: null,
       networks: [],
@@ -163,19 +151,23 @@ export default {
     };
   },
   computed: {
+    ...mapState(["enabled"]),
+    ...mapState(["account"]),
+    ...mapState(["web3"]),
+
     defaultToken() {
       return Object.keys(this.token).length > 0
         ? this.token
         : this.selectedToken;
     },
     connectedAddress() {
-      return this.sharedState.web3Session.account;
+      return this.account;
     },
     isOrigin() {
       return this.connectedAddress === this.selectedAddress;
     },
     walletConnected() {
-      return this.sharedState.web3Session?.enabled;
+      return this.enabled;
     },
   },
   watch: {},
@@ -195,13 +187,16 @@ export default {
     },
     async getOriginBalance() {
       if (this.walletConnected) {
-        return this.sharedState.web3Session.web3.eth.getBalance(
-          this.originToken.address
-        );
+        console.log("GET BALANCE ORIGIN TOKEN", this.originToken);
+        console.log("GET BALANCE WEB3", this.web3);
+        console.log("GET BALANCE WEB3 ETH", this.web3.eth);
+        return this.web3.eth.getBalance(this.originToken.address);
       }
       return 0;
     },
     async changeSwap() {
+      console.log("origin token before", this.originToken);
+      console.log("dest token before", this.destinationToken);
       const _destinationToken = this.originToken;
       this.originToken = this.destinationToken;
       this.destinationToken = _destinationToken;

@@ -31,7 +31,6 @@ export const actions: ActionTree<SessionState, RootState> = {
     rLogin
       .connect()
       .then((rLoginResponse) => {
-        console.log("rlogin res provider", rLoginResponse.provider);
         const web3 = new Web3(rLoginResponse.provider);
 
         // todo: get networks based on chainId?
