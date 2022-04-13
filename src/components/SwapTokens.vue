@@ -34,7 +34,10 @@
 <script>
 import BigNumber from "bignumber.js";
 
-import store from "@/store/index.ts";
+import { createNamespacedHelpers } from "vuex";
+
+const { mapState } = createNamespacedHelpers("session");
+
 import TransferCard from "@/components/TransferCard.vue";
 export default {
   name: "SwapTokens",
@@ -48,15 +51,16 @@ export default {
     return {
       sourceAmount: new BigNumber(0),
       destinationAmount: new BigNumber(0),
-      web3Session: store.state.web3Session,
       error: "",
     };
   },
   computed: {
+    ...mapState(["enabled"]),
+    ...mapState(["account"]),
     disabledActionButtons() {
       return (
         // todo: check other cases to disable it
-        !this.web3Session?.enabled ||
+        !this.enabled ||
         this.showSpinner ||
         this.sourceAmount < 0 ||
         this.destinationAmount < 0
@@ -79,7 +83,7 @@ export default {
       event.preventDefault();
 
       // get web3
-      if (!this.web3Session || !this.web3Session?.enabled) {
+      if (!this.enabled) {
         console.error("web3 session not instantiated or connected!");
         return;
       }
@@ -89,7 +93,7 @@ export default {
       try {
         this.showSpinner = true;
         const receipt = await this.erc20TokenInstance.approve(tokenAddress, {
-          from: this.web3Session.accountAddress,
+          from: this.account,
           gas: 70_000,
         });
         console.info("approval receipt", receipt);
