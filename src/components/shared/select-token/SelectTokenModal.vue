@@ -1,24 +1,25 @@
 <template>
   <div>
-    <Button :disabled="!walletConnected"
+    <Button
+      :disabled="!walletConnected"
       class="select-token-button"
       :variant="modelValue ? 'dark' : 'primary'"
       rounded
       @click="openModal"
     >
       <template v-if="modelValue.address && selectedToken">
-        <img
-          class="token-image"
-          :src="selectedToken.icon"
-          :alt="`${selectedToken.name} logo`"
-        />
-        <h3 class="token-name">
-          {{ selectedToken.token }}
-        </h3>
+        <div class="select-token-button mr-3">
+          <img
+            class="token-image"
+            :src="selectedToken.icon"
+            :alt="`${selectedToken.name} logo`"
+          />
+          <h3 class="token-name">
+            {{ selectedToken.token }}
+          </h3>
+        </div>
       </template>
-      <template v-else>
-        Select a token
-      </template>
+      <template v-else><span> Select a token</span> </template>
       <v-img
         class="svg-image-to-white select-token-icon"
         src="@/assets/images/icons/angle-bottom.svg"
@@ -34,9 +35,7 @@
         >
           <v-img src="@/assets/images/icons/arrow-left.svg" />
         </Button>
-        <h3 class="header-title">
-          Manage
-        </h3>
+        <h3 class="header-title">Manage</h3>
       </template>
 
       <SelectToken
@@ -63,20 +62,21 @@ export default {
     SelectToken,
   },
   props: {
-    modelValue: {
-    },
+    modelValue: {},
   },
   data() {
     return {
-      manageTokenListsVisibility: false
+      manageTokenListsVisibility: false,
     };
   },
   computed: {
     ...mapState(["enabled"]),
     ...mapState(["account"]),
-    ...mapGetters(["allTokens"]), 
+    ...mapGetters(["allTokens"]),
     selectedToken() {
-      return this.allTokens.find((token) => token.address === this.modelValue.address);
+      return this.allTokens.find(
+        (token) => token.address === this.modelValue.address
+      );
     },
     walletConnected() {
       return this.enabled;
@@ -117,12 +117,14 @@ export default {
 }
 .select-token-icon {
   width: 11px;
+  margin-top: 4px;
   margin-left: 10px;
 }
 .select-token-button {
   display: inline-flex;
-  margin-right: 8px;
-  margin-bottom: 8px;
+  padding: 0px;
+  margin: 0px;
+  margin-top: 4px;
   align-items: center;
   font-size: 18px;
   white-space: nowrap;
