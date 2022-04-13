@@ -49,47 +49,48 @@
         </div>
       </article>
       <div class="mb-5">
-        <div class="d-flex flex-column mb-3 w-100">
-          <span class="text-left ml-4">to address</span>
-          <div class="d-flex flex-row flex-wrap justify-content-between">
-            <button
-              v-if="!hasAllowance"
-              id="approve"
-              class="btn btn-primary w-45 py-3 rounded"
-              :disabled="!walletConnected && swapFrom.address"
-              @click="onApprove"
-            >
-              Connected address
-            </button>
-            <button
-              id="deposit"
-              class="btn btn-primary w-45 py-3 rounded"
-              :disabled="!walletConnected || !hasAllowance"
-              @click="onSubmit"
-            >
-              Different address
-            </button>
-          </div>
-        </div>
-        <div>
-          <div class="d-flex flex-row flex-wrap justify-content-between mt-4">
-            <button
-              v-if="!hasAllowance"
-              id="approve"
-              class="btn btn-primary w-45 py-3 rounded"
-              :disabled="!walletConnected && swapFrom.address"
-              @click="onApprove"
-            >
-              Approve
-            </button>
-            <button
-              id="deposit"
-              class="btn btn-primary w-45 py-3 rounded"
-              :disabled="!walletConnected || !hasAllowance"
-              @click="onSubmit"
-            >
-              Swap tokens
-            </button>
+        <div class="w-100">
+          <div class="container-fluid box-button">
+            <div class="row gx-4">
+              <div class="col-md-6 col-sm-12 mb-3">
+                <button
+                  v-if="!hasAllowance"
+                  class="btn btn-primary py-3 rounded w-100"
+                  :disabled="!walletConnected && swapFrom.address"
+                  @click="onApprove"
+                >
+                  Connected address
+                </button>
+              </div>
+              <div class="col-md-6 col-sm-12 mb-3">
+                <button
+                  class="btn btn-primary py-3 rounded w-100"
+                  :disabled="!walletConnected || !hasAllowance"
+                  @click="onSubmit"
+                >
+                  Different address
+                </button>
+              </div>
+              <div class="col-md-6 col-sm-12 mb-3">
+                <button
+                  v-if="!hasAllowance"
+                  class="btn btn-primary w-100 py-3 rounded"
+                  :disabled="!walletConnected && swapFrom.address"
+                  @click="onApprove"
+                >
+                  Approve
+                </button>
+              </div>
+              <div class="col-md-6 col-sm-12 mb-3">
+                <button
+                  class="btn btn-primary w-100 py-3 rounded"
+                  :disabled="!walletConnected || !hasAllowance"
+                  @click="onSubmit"
+                >
+                  Swap tokens
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -252,5 +253,16 @@ export default defineComponent({
 
 .w-60 {
   width: 60%;
+}
+
+.g-10 {
+  gap: 10%;
+}
+
+.min-w-45 {
+  min-width: 50%;
+}
+.box-button {
+  padding: 0;
 }
 </style>
