@@ -102,8 +102,10 @@
 
 <script>
 import { RBTC_TOKEN, RKOVWBTC_TOKEN } from "@/constants/tokens/tokens";
+import ERC20_ABI from "@/constants/abis/erc20.json";
 
 import { createNamespacedHelpers } from "vuex";
+import BigNumber from "bignumber.js";
 
 const { mapState } = createNamespacedHelpers("session");
 
@@ -187,20 +189,30 @@ export default {
     },
     async getOriginBalance() {
       if (this.walletConnected) {
-        console.log("GET BALANCE ORIGIN TOKEN", this.originToken);
-        console.log("GET BALANCE WEB3", this.web3);
-        console.log("GET BALANCE WEB3 ETH", this.web3.eth);
-        return this.web3.eth.getBalance(this.originToken.address);
+        switch (this.originToken.type) {
+          case "ERC20": {
+            const tokenContract = new this.web3.eth.Contract(
+              ERC20_ABI,
+              this.originToken.address
+            );
+            const balance = await tokenContract.methods
+              .balanceOf(this.account)
+              .call();
+            return new BigNumber(balance).shiftedBy(-18);
+          }
+          default: {
+            const balance = await this.web3.eth.getBalance(this.account);
+            return new BigNumber(balance).shiftedBy(-18);
+          }
+        }
       }
       return 0;
     },
     async changeSwap() {
-      console.log("origin token before", this.originToken);
-      console.log("dest token before", this.destinationToken);
       const _destinationToken = this.originToken;
       this.originToken = this.destinationToken;
       this.destinationToken = _destinationToken;
-      this.currentBalance = await this.getOriginBalance();
+      this.currentBalance = await this.getOriginBalance(this.account);
     },
     handleChangeAddress($event) {
       this.selectedAddress = $event.target.value;
