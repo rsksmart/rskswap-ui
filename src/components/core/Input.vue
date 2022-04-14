@@ -1,11 +1,18 @@
 <template>
-  <input
-    type="text"
-    :class="`app-input size-${size}`"
-    v-bind="$attrs"
-    :value="modelValue"
-    @input="inputHandler"
-  />
+  <div
+    class="w-100 d-flex justify-content-between align-items-center rounded default-border"
+  >
+    <input
+      type="text"
+      :class="`app-input size-${size}`"
+      v-bind="$attrs"
+      :value="modelValue"
+      @input="inputHandler"
+    />
+    <div class="icon mr-4">
+      <v-img :src="getImgUrl(iconSrc)" :alt="iconAlt" />
+    </div>
+  </div>
 </template>
 
 <script>
@@ -15,6 +22,8 @@ export default {
     modelValue: {
       type: String,
     },
+    iconSrc: String,
+    iconAlt: String,
     size: {
       type: String,
       default: "medium",
@@ -27,20 +36,32 @@ export default {
     inputHandler(e) {
       this.$emit("update:modelValue", e.target.value);
     },
+    getImgUrl(pic) {
+      if (pic.indexOf("http") > -1) {
+        return pic;
+      }
+      return require(`../../assets/images/icons/${pic}`);
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.app-input {
-  width: 100%;
-  background: none;
-  font-size: 16px;
-  padding: 5px 12px;
-  border-radius: 20px;
+.default-border {
   border: 1px solid $darkBorderSecondaryColor;
-  background-color: $darkSecondaryBackground;
+}
+.app-input {
+  background: none;
+  font-size: 0.75rem;
+  padding: 5px 12px;
+  border: none;
+  // border-radius: 20px;
+  // background-color: $darkSecondaryBackground;
   box-sizing: border-box;
+
+  &::-webkit-input-placeholder {
+    font-size: 0.75rem;
+  }
 
   &.size-large {
     font-size: 18px;
@@ -49,7 +70,13 @@ export default {
   &,
   &:focus {
     outline: none;
-    color: #fff;
+    color: $gray;
   }
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  color: black;
 }
 </style>

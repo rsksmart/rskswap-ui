@@ -1,62 +1,66 @@
 <template>
-  <div>
-    <div class="tokens-filters">
+  <div class="container p-5">
+    <div class="mb-4">
       <Input
         size="large"
         placeholder="Search name or paste address"
         v-model="searchText"
+        iconAlt="close modal icon"
+        iconSrc="search-icon.svg"
       />
-      <div class="common-tokens-section">
-        <h5 class="section-title">
-          Common bases
-          <InfoTooltip
-            text="These tokens are commonly paired with other tokens."
-          />
-        </h5>
-
-        <!--
-          line 26: "token in allTokens.slice(0, 6)"
-          it's just a mocking for the common tokens
-        -->
-
-        <div class="section-body">
-          <Button
-            variant="outlined"
-            class="token-button"
-            v-for="token in allTokens.slice(0, 6)"
-            :key="token.token"
-            :disabled="token.address === modelValue.address"
-            @click="selectToken(token)"
-          >
-            <img
-              class="token-image"
-              :src="token.icon"
-              :alt="`${token.token} logo`"
-            />
-            <h3 class="token-name">
-              {{ token.name }}
-            </h3>
-          </Button>
-        </div>
-      </div>
     </div>
     <ul class="currencies-list">
       <template v-for="token in allTokens">
         <li
-          :class="['token-item', { selected: token.address === modelValue.address }]"
+          :class="[
+            'token-item',
+            'p-3',
+            'w-100',
+            'mb-3',
+            'container-fluid',
+            'rounded',
+            { selected: token.address === modelValue.address },
+          ]"
           @click="selectToken(token)"
           :key="token.token"
           v-if="isTokenVisible(token)"
         >
-          <img
-            class="token-image"
-            :src="token.icon"
-            :alt="`${token.token} logo`"
-          />
-          <h3 class="token-name">
-            {{ token.name }}
-            <span class="full-name">{{ token.name }}</span>
-          </h3>
+          <div class="row no-gutters">
+            <div class="col-10">
+              <div class="row no-gutters">
+                <div class="col-2">
+                  <img
+                    class="token-image"
+                    :src="token.icon"
+                    :alt="`${token.token} logo`"
+                  />
+                </div>
+                <div class="col-7">
+                  <div class="d-flex align-items-center">
+                    <h3 class="token-name text-left">
+                      {{ token.token }}
+                    </h3>
+                    <span class="description d-none d-sm-block ml-3">{{
+                      token.name
+                    }}</span>
+                  </div>
+                </div>
+                <div class="col-3">
+                  <div class="d-flex align-items-center justify-content-end">
+                    <span class="description"> {{ token.balance }} </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-2 d-flex justify-content-center align-items-center">
+              <v-img
+                v-if="token.address === modelValue.address"
+                id="check"
+                src="@/assets/images/icons/check-icon.svg"
+                alt="token selected"
+              />
+            </div>
+          </div>
         </li>
       </template>
     </ul>
@@ -79,8 +83,7 @@ export default {
     InfoTooltip,
   },
   props: {
-    modelValue: {
-    },
+    modelValue: {},
   },
   data() {
     return {
@@ -90,7 +93,7 @@ export default {
   computed: {
     ...mapState(["enabled"]),
     ...mapState(["account"]),
-    ...mapGetters(["allTokens"]),    
+    ...mapGetters(["allTokens"]),
     connectedAddress() {
       return this.account;
     },
@@ -102,6 +105,7 @@ export default {
     isTokenVisible(token) {
       return (
         !this.searchText ||
+        token.token.toLowerCase().includes(this.searchText.toLowerCase()) ||
         token.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
         token.address === this.searchText
       );
@@ -111,11 +115,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.tokens-filters {
-  padding: 0 15px 15px;
-}
-.section-title {
-  margin-bottom: 10px;
+.container {
+  background-color: $lightGray;
 }
 .currencies-list {
   max-height: 450px;
@@ -123,15 +124,14 @@ export default {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid $darkBorderColor;
 }
 .token-item {
-  display: flex;
-  align-items: center;
-  padding: 10px 20px;
+  background-color: #fff;
   cursor: pointer;
   &:hover {
     background-color: $darkBorderColor;
+    animation: fadeIn;
+    animation-duration: 0.75s;
   }
   &.selected {
     opacity: 0.5;
@@ -139,35 +139,24 @@ export default {
   }
 }
 
-.token-button {
-  display: inline-flex;
-  margin-right: 8px;
-  margin-bottom: 8px;
-  align-items: center;
-  &:disabled {
-    cursor: default;
-    // img {
-    //   filter: grayscale(100%);
-    // }
-  }
-}
 .token-image {
   width: 24px;
   border-radius: 50%;
   margin-right: 15px;
 }
 .token-name {
-  font-size: 16px;
-  margin: 0;
+  font-size: 14px;
+  margin: 0px;
   text-transform: uppercase;
-  .full-name {
-    font-size: 12px;
-    color: $gray;
-    display: block;
-    font-weight: 400;
-  }
 }
-.manage-tokens-button {
-  font-size: 16px;
+.description {
+  font-size: 14px;
+  color: $gray;
+  font-weight: 500;
+}
+
+#check {
+  width: 24px;
+  height: 24px;
 }
 </style>

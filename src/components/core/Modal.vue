@@ -1,22 +1,22 @@
 <template>
   <transition name="fade">
     <div class="app-modal" v-if="isVisible" @click.self="hide">
-      <section class="app-modal-content">
-        <header class="app-modal-header">
+      <section class="app-modal-content rounded">
+        <header class="app-modal-header p-4">
           <slot name="headerTitle" v-if="$slots.headerTitle" />
-
-          <h3 class="header-title" v-else>
+          <div class="d-flex flex-row w-100 justify-content-end pr-2 pt-2">
+            <Button class="close-modal-button" variant="text" @click="hide">
+              <v-img
+                class="svg-image-to-white"
+                src="@/assets/images/icons/close-icon.svg"
+                alt="close modal icon"
+              />
+            </Button>
+          </div>
+          <h3 class="header-title pl-3 pt-2" v-if="!$slots.headerTitle">
             {{ title }}
           </h3>
-          <Button class="close-modal-button" variant="text" @click="hide">
-            <v-img
-              class="svg-image-to-white"
-              src="@/assets/images/icons/close-icon.svg"
-              alt="close modal icon"
-            />
-          </Button>
         </header>
-
         <article
           :class="[
             'app-modal-body',
@@ -88,18 +88,19 @@ export default defineComponent({
 }
 .app-modal-content {
   width: 100%;
-  max-width: 400px;
-  border: 1px solid $darkSecondaryBackground;
-  border-radius: 20px;
+  max-width: 480px;
   background-color: $darkBackground;
   overflow: hidden;
 }
 .app-modal-header {
-  padding: 16px;
+  min-height: 96px;
   display: flex;
-  justify-content: space-between;
+
+  flex-direction: column;
   .header-title {
+    font-size: 1.35rem;
     margin: 0;
+    text-align: left;
   }
   .close-modal-button {
     width: 20px;
@@ -118,14 +119,5 @@ export default defineComponent({
   padding: 16px;
   background-color: $darkSecondaryBackground;
   border-top: 1px solid $darkBorderColor;
-}
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>
