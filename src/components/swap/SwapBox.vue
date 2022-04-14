@@ -122,10 +122,13 @@
 
 <script>
 import { defineComponent } from "vue";
+import { createNamespacedHelpers } from "vuex";
+
+import * as constants from "@/store/constants";
+
+import Footer from "@/layouts/Footer.vue";
 import Button from "@/components/core/Button.vue";
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
-import { createNamespacedHelpers } from "vuex";
-import Footer from "@/layouts/Footer.vue";
 
 const { mapState, mapGetters, mapActions } = createNamespacedHelpers("session");
 
@@ -207,11 +210,47 @@ export default defineComponent({
     },
   },
   methods: {
+    ...mapActions([constants.WEB3_APPROVE_TOKEN]),
+
     getTokenByAddress(address) {
       return this.allTokens.find((token) => token.address === address);
     },
     async pasteClipboard() {
       this.destinationAccount = await navigator.clipboard.readText();
+    },
+    async onApprove(event) {
+      // TODO: fetch alllowance on connect - different function though-
+      event.preventDefault();
+
+      // get web3
+      if (!this.enabled) {
+        console.error("web3 session not instantiated or connected!");
+        return;
+      }
+
+      if (!this.swapFrom.address) {
+        // TODO: add warning popup or disable approve button if no token selected?
+        console.error("Selected token has no provided address!");
+        return;
+      }
+
+      const tokenAddress = this.swapFrom.address;
+      try {
+        this.showSpinner = true;
+        const receipt = await this.WEB3_APPROVE_TOKEN({
+          tokenAddress,
+          accountAddress: this.account,
+        });
+        console.info("approval receipt", receipt);
+
+        // set allowance to true
+        this.showSpinner = false;
+      } catch (err) {
+        // set allowance to false
+        this.showSpinner = false;
+
+        console.error("approval error: ", err);
+      }
     },
   },
 });
