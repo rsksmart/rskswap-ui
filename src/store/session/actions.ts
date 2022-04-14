@@ -7,6 +7,8 @@ import * as constants from "@/store/constants";
 import { SessionState } from "./types";
 import { RootState } from "../types";
 import { convertToNumber } from "@/utils/address-helpers";
+import ERC20_ABI from "@/constants/abis/erc20.json";
+import { MAX_UINT256 } from "@/utils";
 
 export const actions: ActionTree<SessionState, RootState> = {
   [constants.SESSION_CONNECT_WEB3]: async ({ commit, state }) => {
@@ -52,8 +54,6 @@ export const actions: ActionTree<SessionState, RootState> = {
       });
   },
   [constants.WEB3_SESSION_GET_ACCOUNT]: async ({ commit, state }) => {
-    // const accounts = await Vue.prototype.$web3.eth.getAccounts();
-    // todo: check if we can access it from state
     const accounts = await state?.web3?.eth?.getAccounts();
     commit(constants.SESSION_SET_ACCOUNT, accounts ? accounts[0] : null);
   },
@@ -61,5 +61,43 @@ export const actions: ActionTree<SessionState, RootState> = {
     commit(constants.SESSION_SET_ACCOUNT, undefined);
     commit(constants.SESSION_CLOSE_RLOGIN);
     commit(constants.SESSION_SET_RLOGIN, undefined);
+  },
+
+  [constants.WEB3_APPROVE_TOKEN]: async (
+    { commit, state },
+    { tokenAddress, accountAddress }
+  ) => {
+    //get gas price - optionall
+
+    const CONTRACT_CLASS = state?.web3?.eth.Contract;
+    // init token contract
+    if (!CONTRACT_CLASS) {
+      console.error("web3 was not instantiated...");
+      return;
+    }
+
+    // todo: is really the bridge address we need? if so, is this correct?
+    const bridgeAddress = "0x684a8a976635fb7ad74a0134ace990a6a0fcce84"; // this is testnet-bridge proxy
+
+    // todo: remove this eslint warning
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const tokenContract = new CONTRACT_CLASS(ERC20_ABI, tokenAddress);
+
+    if (!tokenContract) {
+      console.error("token contract couldnt be resolved");
+      return;
+    }
+
+    // todo: should we use async await or promises?
+    return tokenContract.methods.approve(bridgeAddress, MAX_UINT256).send({
+      from: accountAddress,
+    });
+
+    // return new Promise((res, rej) => {
+    //   tokenContract.methods.approve(bridgeAddress, MAX_UINT256).send({
+    //     from: accountAddress,
+    //   });
+    // });
   },
 };
