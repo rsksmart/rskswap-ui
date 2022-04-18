@@ -53,9 +53,8 @@
 import * as constants from "@/store/constants";
 import { createNamespacedHelpers } from "vuex";
 
-const { mapState, mapGetters, mapActions } = createNamespacedHelpers(
-  "session"
-);
+const { mapState, mapGetters, mapActions } = createNamespacedHelpers("session");
+
 export default {
   name: "NavBar",
   data() {
@@ -74,12 +73,12 @@ export default {
     chainName() {
       return this.currentChain?.name;
     },
-  },  
+  },
   methods: {
     ...mapActions([constants.SESSION_CONNECT_WEB3]),
     connectWalletClick() {
       // handle login
-      return this.SESSION_CONNECT_WEB3()
+      return this.SESSION_CONNECT_WEB3();
     },
   },
 };
