@@ -7,7 +7,6 @@ export const RBTC_TOKEN: Token = {
   decimals: 18,
   icon: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png",
   symbol: "rBTC",
-  address: "0x48288D0e3079A03f6EC1846554CFc58C2696Aaee",
   type: "NATIVE",
 };
 

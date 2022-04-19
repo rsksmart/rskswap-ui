@@ -1,5 +1,5 @@
 export interface Token {
-  token: string;
+  token?: string;
   symbol: string;
   name: string;
   typeId: number;

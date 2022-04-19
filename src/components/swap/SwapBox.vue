@@ -162,9 +162,16 @@ export default defineComponent({
             type: "function",
           },
         ];
-        const tokenInst = new this.web3.eth.Contract(tokenAbi, model.address);
-        const balance = await tokenInst.methods.balanceOf(this.account).call();
-        this.swapFrom.balance = this.web3.utils.fromWei(balance);
+        let balance;
+        if (model.address) {
+          const tokenInst = new this.web3.eth.Contract(tokenAbi, model.address);
+          balance = await tokenInst.methods.balanceOf(this.account).call();
+          this.swapFrom.balance = this.web3.utils.fromWei(balance);
+        } else {
+          balance = await this.web3.eth.getBalance(this.account);
+          console.log("balance", balance);
+          this.swapFrom.balance = this.web3.utils.fromWei(this.account);
+        }
       }
       return 0;
     },
