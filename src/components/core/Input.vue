@@ -40,7 +40,10 @@ export default {
       if (pic.indexOf("http") > -1) {
         return pic;
       }
-      return require(`../../assets/images/icons/${pic}`);
+      if (!pic.includes("assets")) {
+        return require(`../../assets/images/icons/${pic}`);
+      }
+      require(`${pic}`);
     },
   },
 };
