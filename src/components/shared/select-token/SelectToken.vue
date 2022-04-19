@@ -47,7 +47,7 @@
                 </div>
                 <div class="col-3">
                   <div class="d-flex align-items-center justify-content-end">
-                    <span class="description"> {{ token.balance }} </span>
+                    <span class="description"> {{ token.balance || 0 }} </span>
                   </div>
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default {
   padding: 0;
 }
 .token-item {
-  background-color: #fff;
+  background-color: $darkBackground;
   cursor: pointer;
   &:hover {
     background-color: $darkBorderColor;

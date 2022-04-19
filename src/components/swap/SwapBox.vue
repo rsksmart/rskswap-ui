@@ -55,21 +55,41 @@
               <div class="col-md-6 col-sm-12 mb-3">
                 <button
                   v-if="!hasAllowance"
-                  class="btn btn-primary py-3 rounded w-100"
+                  :class="paddingConnectedAddress"
                   :disabled="!walletConnected && swapFrom.address"
-                  @click="onApprove"
                 >
-                  Connected address
+                  <span :class="fontSizeConnectedAddress"
+                    >Connected address</span
+                  >
+                  <br />
+                  <div v-if="walletConnected" class="text">
+                    <span>{{ account }}</span>
+                  </div>
                 </button>
               </div>
               <div class="col-md-6 col-sm-12 mb-3">
-                <button
-                  class="btn btn-primary py-3 rounded w-100"
+                <div
+                  id="diferentAddress"
+                  class="rounded p-3"
                   :disabled="!walletConnected || !hasAllowance"
                   @click="onSubmit"
                 >
-                  Different address
-                </button>
+                  <span v-if="!walletConnected"> Different address </span>
+                  <div
+                    v-else
+                    class="d-flex w-100 justify-content-center align-items-center"
+                  >
+                    <input
+                      type="text"
+                      class="input"
+                      placeholder="paste address"
+                      v-model="destinationAccount"
+                    />
+                    <div @click="pasteClipboard" class="clipboard-icon">
+                      <v-img src="@/assets/images/icons/paste-icon.svg" />
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="col-md-6 col-sm-12 mb-3">
                 <button
@@ -164,6 +184,7 @@ export default defineComponent({
         balance: 0,
         value: "",
       },
+      destinationAccount: "",
     };
   },
   computed: {
@@ -174,10 +195,21 @@ export default defineComponent({
     walletConnected() {
       return this.enabled;
     },
+    paddingConnectedAddress() {
+      return `btn btn-primary ${
+        this.walletConnected ? "py-2" : "py-3"
+      } rounded w-100`;
+    },
+    fontSizeConnectedAddress() {
+      return this.walletConnected ? "12px" : "14px";
+    },
   },
   methods: {
     getTokenByAddress(address) {
       return this.allTokens.find((token) => token.address === address);
+    },
+    async pasteClipboard() {
+      this.destinationAccount = await navigator.clipboard.readText();
     },
   },
 });
@@ -264,5 +296,38 @@ export default defineComponent({
 }
 .box-button {
   padding: 0;
+}
+
+.text {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#diferentAddress {
+  background-color: $gray;
+  color: white;
+  font-size: 14px;
+  .input {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: transparent;
+    color: white;
+    border: none;
+    &::placeholder {
+      color: white !important;
+      font-size: 14px;
+    }
+
+    &:disabled {
+      background-color: $lightGray;
+    }
+  }
+  .clipboard-icon {
+    cursor: pointer;
+    width: 14px;
+  }
 }
 </style>
