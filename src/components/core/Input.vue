@@ -10,7 +10,7 @@
       @input="inputHandler"
     />
     <div class="icon mr-4">
-      <v-img :src="getImgUrl(iconSrc)" :alt="iconAlt" />
+      <i :class="fontAwesomeIcon"></i>
     </div>
   </div>
 </template>
@@ -22,8 +22,10 @@ export default {
     modelValue: {
       type: String,
     },
-    iconSrc: String,
-    iconAlt: String,
+    fontAwesomeIcon: {
+      type: String,
+      require: true,
+    },
     size: {
       type: String,
       default: "medium",

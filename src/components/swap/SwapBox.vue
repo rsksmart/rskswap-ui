@@ -25,7 +25,9 @@
           </div>
         </div>
         <div>
-          <button class="btn btn-primary btn-lg rounded my-4">X</button>
+          <button class="p-3 rounded my-4 btn-arrow">
+            <i class="fa-solid fa-arrow-right-arrow-left fa-2xl"></i>
+          </button>
         </div>
         <div class="w-100 d-flex flex-column">
           <span class="text-left ml-4">receive</span>
@@ -86,7 +88,7 @@
                       v-model="destinationAccount"
                     />
                     <div @click="pasteClipboard" class="clipboard-icon">
-                      <v-img src="@/assets/images/icons/paste-icon.svg" />
+                      <i class="fa-regular fa-paste"></i>
                     </div>
                   </div>
                 </div>
@@ -303,6 +305,12 @@ export default defineComponent({
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.btn-arrow {
+  background-color: $primary;
+  border: none;
+  color: $lightGray;
 }
 
 #diferentAddress {

@@ -20,10 +20,7 @@
         </div>
       </template>
       <template v-else><span class="py-1">Select a token</span> </template>
-      <v-img
-        class="svg-image-to-white select-token-icon"
-        src="@/assets/images/icons/angle-bottom.svg"
-      />
+      <i class="ml-2 fa-solid fa-angle-down"></i>
     </Button>
     <Modal ref="modal" title="Select a token" no-body-padding>
       <template v-if="manageTokenListsVisibility" v-slot:headerTitle>
@@ -33,7 +30,7 @@
           noPadding
           @click="closeManageTokenLists"
         >
-          <v-img src="@/assets/images/icons/arrow-left.svg" />
+          <i class="fa-solid fa-arrow-left"></i>
         </Button>
         <h3 class="header-title">Manage</h3>
       </template>

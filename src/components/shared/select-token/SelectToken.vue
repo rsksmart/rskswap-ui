@@ -5,8 +5,7 @@
         size="large"
         placeholder="Search name or paste address"
         v-model="searchText"
-        iconAlt="close modal icon"
-        iconSrc="search-icon.svg"
+        fontAwesomeIcon="fa-solid fa-magnifying-glass fa-lg"
       />
     </div>
     <ul class="currencies-list">
@@ -53,12 +52,10 @@
               </div>
             </div>
             <div class="col-2 d-flex justify-content-center align-items-center">
-              <v-img
+              <i
                 v-if="token.address === modelValue.address"
-                id="check"
-                src="@/assets/images/icons/check-icon.svg"
-                alt="token selected"
-              />
+                class="fa-solid fa-check"
+              ></i>
             </div>
           </div>
         </li>

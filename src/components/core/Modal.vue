@@ -6,11 +6,7 @@
           <slot name="headerTitle" v-if="$slots.headerTitle" />
           <div class="d-flex flex-row w-100 justify-content-end pr-2 pt-2">
             <Button class="close-modal-button" variant="text" @click="hide">
-              <v-img
-                class="svg-image-to-white"
-                src="@/assets/images/icons/close-icon.svg"
-                alt="close modal icon"
-              />
+              <i class="fa-solid fa-xmark"></i>
             </Button>
           </div>
           <h3 class="header-title pl-3 pt-2" v-if="!$slots.headerTitle">
