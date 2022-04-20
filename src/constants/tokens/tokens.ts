@@ -8,6 +8,7 @@ export const RBTC_TOKEN: Token = {
   icon: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png",
   symbol: "rBTC",
   type: "NATIVE",
+  address: "0x",
 };
 
 export const RKOVWBTC_TOKEN: Token = {
