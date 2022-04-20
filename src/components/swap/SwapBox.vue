@@ -143,8 +143,9 @@ export default defineComponent({
   watch: {
     async swapFrom(model) {
       if (model) {
-        console.log("model", model);
+        this.hasAllowance = false;
         let balance;
+        // native tokens needs to approval?
         if (model.type === "NATIVE") {
           balance = await this.web3.eth.getBalance(this.account);
 
@@ -159,6 +160,13 @@ export default defineComponent({
           );
           balance = await tokenInst.methods.balanceOf(this.account).call();
           this.swapFrom.balance = this.web3.utils.fromWei(balance);
+
+          const spenderAddress = "0x7c77704007C9996Ee591C516f7319828BA49d91E"; //
+          const allowance = await tokenInst.methods
+            .allowance(this.account, spenderAddress)
+            .call();
+          console.log("allowance", allowance);
+          this.hasAllowance = allowance > 0;
         }
       }
       return 0;
@@ -185,6 +193,7 @@ export default defineComponent({
         value: "",
       },
       destinationAccount: "",
+      hasAllowance: false,
     };
   },
   computed: {
@@ -213,7 +222,7 @@ export default defineComponent({
     async pasteClipboard() {
       this.destinationAccount = await navigator.clipboard.readText();
     },
-    async onApprove(event) {
+    async onApprove() {
       // TODO: fetch alllowance on connect - different function though-
       if (!this.enabled) {
         console.error("web3 session not instantiated or connected!");
@@ -236,10 +245,12 @@ export default defineComponent({
         console.info("approval receipt", receipt);
 
         // set allowance to true
+        this.hasAllowance = true;
         this.showSpinner = false;
       } catch (err) {
         // set allowance to false
         this.showSpinner = false;
+        this.hasAllowance = false;
 
         console.error("approval error: ", err);
       }
