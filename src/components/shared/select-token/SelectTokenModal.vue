@@ -2,13 +2,13 @@
   <div>
     <Button
       :disabled="!walletConnected"
-      class="select-token-button"
+      class="d-flex align-items-center select-token-button"
       :variant="modelValue ? 'dark' : 'primary'"
       rounded
       @click="openModal"
     >
       <template v-if="modelValue.address && selectedToken">
-        <div class="select-token-button mr-3">
+        <div class="d-flex mr-3">
           <img
             class="token-image"
             :src="selectedToken.icon"
@@ -19,11 +19,8 @@
           </h3>
         </div>
       </template>
-      <template v-else><span> Select a token</span> </template>
-      <v-img
-        class="svg-image-to-white select-token-icon"
-        src="@/assets/images/icons/angle-bottom.svg"
-      />
+      <template v-else><span class="py-1">Select a token</span> </template>
+      <i class="ml-2 fa-solid fa-angle-down"></i>
     </Button>
     <Modal ref="modal" title="Select a token" no-body-padding>
       <template v-if="manageTokenListsVisibility" v-slot:headerTitle>
@@ -33,7 +30,7 @@
           noPadding
           @click="closeManageTokenLists"
         >
-          <v-img src="@/assets/images/icons/arrow-left.svg" />
+          <i class="fa-solid fa-arrow-left"></i>
         </Button>
         <h3 class="header-title">Manage</h3>
       </template>
@@ -117,22 +114,16 @@ export default {
 }
 .select-token-icon {
   width: 11px;
-  margin-top: 4px;
   margin-left: 10px;
 }
 .select-token-button {
-  display: inline-flex;
-  padding: 0px;
-  margin: 0px;
-  margin-top: 4px;
-  align-items: center;
   font-size: 18px;
   white-space: nowrap;
 
   .token-image {
     width: 24px;
     border-radius: 50%;
-    margin-right: 15px;
+    margin-right: 4px;
   }
   .token-name {
     font-size: 16px;

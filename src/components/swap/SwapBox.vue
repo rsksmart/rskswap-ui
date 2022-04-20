@@ -25,7 +25,9 @@
           </div>
         </div>
         <div>
-          <button class="btn btn-primary btn-lg rounded my-4">X</button>
+          <button class="p-3 rounded my-4 btn-arrow">
+            <i class="fa-solid fa-arrow-right-arrow-left fa-2xl"></i>
+          </button>
         </div>
         <div class="w-100 d-flex flex-column">
           <span class="text-left ml-4">receive</span>
@@ -49,47 +51,68 @@
         </div>
       </article>
       <div class="mb-5">
-        <div class="d-flex flex-column mb-3 w-100">
-          <span class="text-left ml-4">to address</span>
-          <div class="d-flex flex-row flex-wrap justify-content-between">
-            <button
-              v-if="!hasAllowance"
-              id="approve"
-              class="btn btn-primary w-45 py-3 rounded"
-              :disabled="!walletConnected && swapFrom.address"
-              @click="onApprove"
-            >
-              Connected address
-            </button>
-            <button
-              id="deposit"
-              class="btn btn-primary w-45 py-3 rounded"
-              :disabled="!walletConnected || !hasAllowance"
-              @click="onSubmit"
-            >
-              Different address
-            </button>
-          </div>
-        </div>
-        <div>
-          <div class="d-flex flex-row flex-wrap justify-content-between mt-4">
-            <button
-              v-if="!hasAllowance"
-              id="approve"
-              class="btn btn-primary w-45 py-3 rounded"
-              :disabled="!walletConnected && swapFrom.address"
-              @click="onApprove"
-            >
-              Approve
-            </button>
-            <button
-              id="deposit"
-              class="btn btn-primary w-45 py-3 rounded"
-              :disabled="!walletConnected || !hasAllowance"
-              @click="onSubmit"
-            >
-              Swap tokens
-            </button>
+        <div class="w-100">
+          <div class="container-fluid box-button">
+            <div class="row gx-4">
+              <div class="col-md-6 col-sm-12 mb-3">
+                <button
+                  v-if="!hasAllowance"
+                  :class="paddingConnectedAddress"
+                  :disabled="!walletConnected && swapFrom.address"
+                >
+                  <span :class="fontSizeConnectedAddress"
+                    >Connected address</span
+                  >
+                  <br />
+                  <div v-if="walletConnected" class="text">
+                    <span>{{ account }}</span>
+                  </div>
+                </button>
+              </div>
+              <div class="col-md-6 col-sm-12 mb-3">
+                <div
+                  id="diferentAddress"
+                  class="rounded p-3"
+                  :disabled="!walletConnected || !hasAllowance"
+                  @click="onSubmit"
+                >
+                  <span v-if="!walletConnected"> Different address </span>
+                  <div
+                    v-else
+                    class="d-flex w-100 justify-content-center align-items-center"
+                  >
+                    <input
+                      type="text"
+                      class="input"
+                      placeholder="paste address"
+                      v-model="destinationAccount"
+                    />
+                    <div @click="pasteClipboard" class="clipboard-icon">
+                      <i class="fa-regular fa-paste"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 col-sm-12 mb-3">
+                <button
+                  v-if="!hasAllowance"
+                  class="btn btn-primary w-100 py-3 rounded"
+                  :disabled="!walletConnected && swapFrom.address"
+                  @click="onApprove"
+                >
+                  Approve
+                </button>
+              </div>
+              <div class="col-md-6 col-sm-12 mb-3">
+                <button
+                  class="btn btn-primary w-100 py-3 rounded"
+                  :disabled="!walletConnected || !hasAllowance"
+                  @click="onSubmit"
+                >
+                  Swap tokens
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -163,6 +186,7 @@ export default defineComponent({
         balance: 0,
         value: "",
       },
+      destinationAccount: "",
     };
   },
   computed: {
@@ -173,10 +197,21 @@ export default defineComponent({
     walletConnected() {
       return this.enabled;
     },
+    paddingConnectedAddress() {
+      return `btn btn-primary ${
+        this.walletConnected ? "py-2" : "py-3"
+      } rounded w-100`;
+    },
+    fontSizeConnectedAddress() {
+      return this.walletConnected ? "12px" : "14px";
+    },
   },
   methods: {
     getTokenByAddress(address) {
       return this.allTokens.find((token) => token.address === address);
+    },
+    async pasteClipboard() {
+      this.destinationAccount = await navigator.clipboard.readText();
     },
   },
 });
@@ -252,5 +287,55 @@ export default defineComponent({
 
 .w-60 {
   width: 60%;
+}
+
+.g-10 {
+  gap: 10%;
+}
+
+.min-w-45 {
+  min-width: 50%;
+}
+.box-button {
+  padding: 0;
+}
+
+.text {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-arrow {
+  background-color: $primary;
+  border: none;
+  color: $lightGray;
+}
+
+#diferentAddress {
+  background-color: $gray;
+  color: white;
+  font-size: 14px;
+  .input {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: transparent;
+    color: white;
+    border: none;
+    &::placeholder {
+      color: white !important;
+      font-size: 14px;
+    }
+
+    &:disabled {
+      background-color: $lightGray;
+    }
+  }
+  .clipboard-icon {
+    cursor: pointer;
+    width: 14px;
+  }
 }
 </style>
