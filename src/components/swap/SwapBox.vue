@@ -98,7 +98,7 @@
                   v-if="!hasAllowance"
                   class="btn btn-primary w-100 py-3 rounded"
                   :disabled="!walletConnected && swapFrom.address"
-                  @click="onApprove"
+                  @click.prevent="onApprove"
                 >
                   Approve
                 </button>
@@ -123,8 +123,10 @@
 <script>
 import { defineComponent } from "vue";
 import { createNamespacedHelpers } from "vuex";
+import BigNumber from "bignumber.js";
 
 import * as constants from "@/store/constants";
+import ERC20_ABI from "@/constants/abis/erc20.json";
 
 import Footer from "@/layouts/Footer.vue";
 import Button from "@/components/core/Button.vue";
@@ -135,42 +137,28 @@ const { mapState, mapGetters, mapActions } = createNamespacedHelpers("session");
 export default defineComponent({
   name: "SwapBox",
   components: {
-    Button,
     SelectTokenModal,
     Footer,
   },
   watch: {
     async swapFrom(model) {
       if (model) {
-        const tokenAbi = [
-          {
-            constant: true,
-            inputs: [
-              {
-                name: "_owner",
-                type: "address",
-              },
-            ],
-            name: "balanceOf",
-            outputs: [
-              {
-                name: "balance",
-                type: "uint256",
-              },
-            ],
-            payable: false,
-            type: "function",
-          },
-        ];
+        console.log("model", model);
         let balance;
-        if (model.address) {
-          const tokenInst = new this.web3.eth.Contract(tokenAbi, model.address);
+        if (model.type === "NATIVE") {
+          balance = await this.web3.eth.getBalance(this.account);
+
+          // this.swapFrom.balance = this.web3.utils.fromWei(this.account); // todo: why this doesnt work?
+          this.swapFrom.balance = new BigNumber(balance).shiftedBy(
+            -model.decimals || -18
+          );
+        } else {
+          const tokenInst = new this.web3.eth.Contract(
+            ERC20_ABI,
+            model.address
+          );
           balance = await tokenInst.methods.balanceOf(this.account).call();
           this.swapFrom.balance = this.web3.utils.fromWei(balance);
-        } else {
-          balance = await this.web3.eth.getBalance(this.account);
-          console.log("balance", balance);
-          this.swapFrom.balance = this.web3.utils.fromWei(this.account);
         }
       }
       return 0;
@@ -227,9 +215,6 @@ export default defineComponent({
     },
     async onApprove(event) {
       // TODO: fetch alllowance on connect - different function though-
-      event.preventDefault();
-
-      // get web3
       if (!this.enabled) {
         console.error("web3 session not instantiated or connected!");
         return;

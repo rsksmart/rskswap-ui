@@ -9,6 +9,7 @@ import { RootState } from "../types";
 import { convertToNumber } from "@/utils/address-helpers";
 import ERC20_ABI from "@/constants/abis/erc20.json";
 import { MAX_UINT256 } from "@/utils";
+import { gasPriceHex, transactionCallback } from "@/utils/transactions";
 
 export const actions: ActionTree<SessionState, RootState> = {
   [constants.SESSION_CONNECT_WEB3]: async ({ commit, state }) => {
@@ -71,14 +72,16 @@ export const actions: ActionTree<SessionState, RootState> = {
 
     const CONTRACT_CLASS = state?.web3?.eth.Contract;
     // init token contract
-    if (!CONTRACT_CLASS) {
+    if (!CONTRACT_CLASS || !state?.web3) {
       console.error("web3 was not instantiated...");
       return;
     }
 
-    // todo: is really the bridge address we need? if so, is this correct?
-    const bridgeAddress = "0x684a8a976635fb7ad74a0134ace990a6a0fcce84"; // this is testnet-bridge proxy
+    // todo: should it be the relayer address or the swapbrtc proxy address?
+    const address = "0x7c77704007C9996Ee591C516f7319828BA49d91E"; // this is testnet-address
 
+    // todo: get explorer based on env
+    const explorer = "https://explorer.testnet.rsk.co";
     // todo: remove this eslint warning
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -90,14 +93,20 @@ export const actions: ActionTree<SessionState, RootState> = {
     }
 
     // todo: should we use async await or promises?
-    return tokenContract.methods.approve(bridgeAddress, MAX_UINT256).send({
-      from: accountAddress,
-    });
-
-    // return new Promise((res, rej) => {
-    //   tokenContract.methods.approve(bridgeAddress, MAX_UINT256).send({
-    //     from: accountAddress,
-    //   });
+    // return tokenContract.methods.approve(address, MAX_UINT256).send({
+    //   from: accountAddress,
+    //   gas: 70_000,
     // });
+    const gasPrice = await gasPriceHex(state.web3);
+
+    return new Promise((resolve, reject) => {
+      tokenContract.methods.approve(address, MAX_UINT256).send(
+        {
+          from: accountAddress,
+          gasPrice,
+        },
+        transactionCallback({ resolve, reject, web3: state.web3, explorer })
+      );
+    });
   },
 };
