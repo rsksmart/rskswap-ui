@@ -198,11 +198,15 @@ export default {
             const balance = await tokenContract.methods
               .balanceOf(this.account)
               .call();
-            return new BigNumber(balance).shiftedBy(-18);
+            return new BigNumber(balance).shiftedBy(
+              -this.originToken.decimals || -18
+            );
           }
           default: {
             const balance = await this.web3.eth.getBalance(this.account);
-            return new BigNumber(balance).shiftedBy(-18);
+            return new BigNumber(balance).shiftedBy(
+              -this.originToken.decimals || -18
+            );
           }
         }
       }
