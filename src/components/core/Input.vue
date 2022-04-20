@@ -38,15 +38,6 @@ export default {
     inputHandler(e) {
       this.$emit("update:modelValue", e.target.value);
     },
-    getImgUrl(pic) {
-      if (pic.indexOf("http") > -1) {
-        return pic;
-      }
-      if (!pic.includes("assets")) {
-        return require(`../../assets/images/icons/${pic}`);
-      }
-      require(`${pic}`);
-    },
   },
 };
 </script>
