@@ -68,7 +68,6 @@
 import Button from "@/components/core/Button.vue";
 import Input from "@/components/core/Input.vue";
 import InfoTooltip from "@/components/shared/InfoTooltip.vue";
-// TODO: Move to a "hook" like state
 import { createNamespacedHelpers } from "vuex";
 
 const { mapState, mapGetters } = createNamespacedHelpers("session");
