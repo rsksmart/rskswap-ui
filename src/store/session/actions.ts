@@ -36,7 +36,6 @@ export const actions: ActionTree<SessionState, RootState> = {
       .then((rLoginResponse) => {
         const web3 = new Web3(rLoginResponse.provider);
 
-        // todo: get networks based on chainId?
         const chainId = convertToNumber(rLoginResponse.provider?.chainId);
 
         commit(constants.SESSION_IS_ENABLED, true);
@@ -66,7 +65,7 @@ export const actions: ActionTree<SessionState, RootState> = {
 
   [constants.WEB3_APPROVE_TOKEN]: async (
     { commit, state },
-    { tokenAddress, accountAddress }
+    { tokenAddress, accountAddress, network }
   ) => {
     //get gas price - optionall
 
@@ -77,11 +76,6 @@ export const actions: ActionTree<SessionState, RootState> = {
       return;
     }
 
-    // todo: should it be the relayer address or the swapbrtc proxy address?
-    const address = "0x7c77704007C9996Ee591C516f7319828BA49d91E"; // this is testnet-address
-
-    // todo: get explorer based on env
-    const explorer = "https://explorer.testnet.rsk.co";
     // todo: remove this eslint warning
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -92,21 +86,23 @@ export const actions: ActionTree<SessionState, RootState> = {
       return;
     }
 
-    // todo: should we use async await or promises?
-    // return tokenContract.methods.approve(address, MAX_UINT256).send({
-    //   from: accountAddress,
-    //   gas: 70_000,
-    // });
     const gasPrice = await gasPriceHex(state.web3);
 
     return new Promise((resolve, reject) => {
-      tokenContract.methods.approve(address, MAX_UINT256).send(
-        {
-          from: accountAddress,
-          gasPrice,
-        },
-        transactionCallback({ resolve, reject, web3: state.web3, explorer })
-      );
+      tokenContract.methods
+        .approve(network.swapRbtcProxyAddress, MAX_UINT256)
+        .send(
+          {
+            from: accountAddress,
+            gasPrice,
+          },
+          transactionCallback({
+            resolve,
+            reject,
+            web3: state.web3,
+            explorer: network.explorerAddress,
+          })
+        );
     });
   },
 };
