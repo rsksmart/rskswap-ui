@@ -7,6 +7,9 @@ import * as constants from "@/store/constants";
 import { SessionState } from "./types";
 import { RootState } from "../types";
 import { convertToNumber } from "@/utils/address-helpers";
+import ERC20_ABI from "@/constants/abis/erc20.json";
+import { MAX_UINT256 } from "@/utils";
+import { gasPriceHex, transactionCallback } from "@/utils/transactions";
 
 export const actions: ActionTree<SessionState, RootState> = {
   [constants.SESSION_CONNECT_WEB3]: async ({ commit, state }) => {
@@ -33,7 +36,6 @@ export const actions: ActionTree<SessionState, RootState> = {
       .then((rLoginResponse) => {
         const web3 = new Web3(rLoginResponse.provider);
 
-        // todo: get networks based on chainId?
         const chainId = convertToNumber(rLoginResponse.provider?.chainId);
 
         commit(constants.SESSION_IS_ENABLED, true);
@@ -52,8 +54,6 @@ export const actions: ActionTree<SessionState, RootState> = {
       });
   },
   [constants.WEB3_SESSION_GET_ACCOUNT]: async ({ commit, state }) => {
-    // const accounts = await Vue.prototype.$web3.eth.getAccounts();
-    // todo: check if we can access it from state
     const accounts = await state?.web3?.eth?.getAccounts();
     commit(constants.SESSION_SET_ACCOUNT, accounts ? accounts[0] : null);
   },
@@ -61,5 +61,48 @@ export const actions: ActionTree<SessionState, RootState> = {
     commit(constants.SESSION_SET_ACCOUNT, undefined);
     commit(constants.SESSION_CLOSE_RLOGIN);
     commit(constants.SESSION_SET_RLOGIN, undefined);
+  },
+
+  [constants.WEB3_APPROVE_TOKEN]: async (
+    { commit, state },
+    { tokenAddress, accountAddress, network }
+  ) => {
+    //get gas price - optionall
+
+    const CONTRACT_CLASS = state?.web3?.eth.Contract;
+    // init token contract
+    if (!CONTRACT_CLASS || !state?.web3) {
+      console.error("web3 was not instantiated...");
+      return;
+    }
+
+    // todo: remove this eslint warning
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const tokenContract = new CONTRACT_CLASS(ERC20_ABI, tokenAddress);
+
+    if (!tokenContract) {
+      console.error("token contract couldnt be resolved");
+      return;
+    }
+
+    const gasPrice = await gasPriceHex(state.web3);
+
+    return new Promise((resolve, reject) => {
+      tokenContract.methods
+        .approve(network.swapRbtcProxyAddress, MAX_UINT256)
+        .send(
+          {
+            from: accountAddress,
+            gasPrice,
+          },
+          transactionCallback({
+            resolve,
+            reject,
+            web3: state.web3,
+            explorer: network.explorerAddress,
+          })
+        );
+    });
   },
 };

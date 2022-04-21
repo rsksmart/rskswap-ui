@@ -98,7 +98,7 @@
                   v-if="!hasAllowance"
                   class="btn btn-primary w-100 py-3 rounded"
                   :disabled="!walletConnected && swapFrom.address"
-                  @click="onApprove"
+                  @click.prevent="onApprove"
                 >
                   Approve
                 </button>
@@ -122,46 +122,52 @@
 
 <script>
 import { defineComponent } from "vue";
+import { createNamespacedHelpers } from "vuex";
+import BigNumber from "bignumber.js";
+
+import * as constants from "@/store/constants";
+import ERC20_ABI from "@/constants/abis/erc20.json";
+
+import Footer from "@/layouts/Footer.vue";
 import Button from "@/components/core/Button.vue";
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
-import { createNamespacedHelpers } from "vuex";
-import Footer from "@/layouts/Footer.vue";
 
 const { mapState, mapGetters, mapActions } = createNamespacedHelpers("session");
 
 export default defineComponent({
   name: "SwapBox",
   components: {
-    Button,
     SelectTokenModal,
     Footer,
   },
   watch: {
     async swapFrom(model) {
       if (model) {
-        const tokenAbi = [
-          {
-            constant: true,
-            inputs: [
-              {
-                name: "_owner",
-                type: "address",
-              },
-            ],
-            name: "balanceOf",
-            outputs: [
-              {
-                name: "balance",
-                type: "uint256",
-              },
-            ],
-            payable: false,
-            type: "function",
-          },
-        ];
-        const tokenInst = new this.web3.eth.Contract(tokenAbi, model.address);
-        const balance = await tokenInst.methods.balanceOf(this.account).call();
-        this.swapFrom.balance = this.web3.utils.fromWei(balance);
+        this.hasAllowance = false;
+        let balance;
+        // native tokens needs to approval?
+        if (model.type === "NATIVE") {
+          balance = await this.web3.eth.getBalance(this.account);
+
+          // this.swapFrom.balance = this.web3.utils.fromWei(this.account); // todo: why this doesnt work?
+          this.swapFrom.balance = new BigNumber(balance).shiftedBy(
+            -model.decimals || -18
+          );
+        } else {
+          const tokenInst = new this.web3.eth.Contract(
+            ERC20_ABI,
+            model.address
+          );
+          balance = await tokenInst.methods.balanceOf(this.account).call();
+          this.swapFrom.balance = this.web3.utils.fromWei(balance);
+
+          const spenderAddress = "0x7c77704007C9996Ee591C516f7319828BA49d91E"; //
+          const allowance = await tokenInst.methods
+            .allowance(this.account, spenderAddress)
+            .call();
+          console.log("allowance", allowance);
+          this.hasAllowance = allowance > 0;
+        }
       }
       return 0;
     },
@@ -187,11 +193,13 @@ export default defineComponent({
         value: "",
       },
       destinationAccount: "",
+      hasAllowance: false,
     };
   },
   computed: {
     ...mapState(["enabled"]),
     ...mapState(["account"]),
+    ...mapState(["network"]),
     ...mapState(["web3"]),
     ...mapGetters(["allTokens"]),
     walletConnected() {
@@ -207,11 +215,46 @@ export default defineComponent({
     },
   },
   methods: {
+    ...mapActions([constants.WEB3_APPROVE_TOKEN]),
+
     getTokenByAddress(address) {
       return this.allTokens.find((token) => token.address === address);
     },
     async pasteClipboard() {
       this.destinationAccount = await navigator.clipboard.readText();
+    },
+    async onApprove() {
+      // TODO: fetch alllowance on connect - different function though-
+      if (!this.enabled) {
+        console.error("web3 session not instantiated or connected!");
+        return;
+      }
+
+      if (!this.swapFrom.address) {
+        // TODO: add warning popup or disable approve button if no token selected?
+        console.error("Selected token has no provided address!");
+        return;
+      }
+
+      const tokenAddress = this.swapFrom.address;
+      try {
+        this.showSpinner = true;
+        const receipt = await this.WEB3_APPROVE_TOKEN({
+          tokenAddress,
+          accountAddress: this.account,
+        });
+        console.info("approval receipt", receipt);
+
+        // set allowance to true
+        this.hasAllowance = true;
+        this.showSpinner = false;
+      } catch (err) {
+        // set allowance to false
+        this.showSpinner = false;
+        this.hasAllowance = false;
+
+        console.error("approval error: ", err);
+      }
     },
   },
 });
