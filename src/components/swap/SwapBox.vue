@@ -104,7 +104,7 @@
               </div>
               <div :class="[hasAllowance && walletConnected ? 'col-md-12 justify-content-center' : 'col-md-6 col-sm-12 mb-3']">
                 <button
-                  class="btn btn-primary w-100 py-3 rounded"
+                  class="btn btn-primary py-3 rounded" :class="[hasAllowance ? 'w-50' : 'w-100']"
                   :disabled="!walletConnected || !hasAllowance"
                   @click="onSubmit"
                 >
