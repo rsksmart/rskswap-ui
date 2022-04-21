@@ -199,6 +199,7 @@ export default defineComponent({
   computed: {
     ...mapState(["enabled"]),
     ...mapState(["account"]),
+    ...mapState(["network"]),
     ...mapState(["web3"]),
     ...mapGetters(["allTokens"]),
     walletConnected() {
