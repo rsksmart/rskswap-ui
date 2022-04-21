@@ -1,0 +1,42 @@
+#swaptoken .row {
+  margin: 0
+}
+
+.btn-toolbar {
+  justify-content: center;
+}
+
+.btn {
+  border-radius: 10px;
+}
+
+.btn-primary {
+  font-family: 'Quicksand';
+  color: #fff;
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+.btn-primary:hover,
+.btn-primary:not(:disabled):not(.disabled):active {
+  color: #fff;
+  background-color: #03a335;
+  border-color: #03a335;
+}
+.btn-primary.disabled,
+.btn-primary:disabled {
+  color: #fff;
+  background-color: #e5e5e5;
+  border-color: #e5e5e5;
+}
+
+.btn-outline-primary {
+  color: var(--primary);
+  border-color: var(--primary);
+  border-radius: 10px;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:not(:disabled):not(.disabled):active{
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
