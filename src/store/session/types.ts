@@ -6,23 +6,20 @@ export type ChainConfig = {
   name: string;
 };
 
-export type NetworkConfig = {
+export type NetworkConfig = { 
   networkId: number;
   name: string;
   localStorageName: string;
-  bridge: string;
-  swapRbtcProxyAddress?: string;
-  allowTokens: string;
-  federation: string;
+  relayerAddress: string;
+  swapRbtcProxyAddress: string;
   explorerAddress: string;
   explorerTokenTab: string;
   secondsPerBlock: number;
+  relayerApiEndpoint: string;
   rpc: string;
-  v2UpdateBlock: number;
   feePercentageDivider: number;
   tokenPrefix: string;
   env: string;
-  isRsk: boolean;
 };
 
 export interface SessionState {
