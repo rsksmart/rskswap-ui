@@ -1,18 +1,3 @@
-// export const MAIN_NET_RSK_CONFIG = {
-//   networkId: 30,
-//   name: "RSK Mainnet",
-//   localStorageName: "rsk-mainnet",
-//   relayerAddress: "0x7c77704007C9996Ee591C516f7319828BA49d91E",
-//   swapRbtcProxyAddress: "0x7c77704007C9996Ee591C516f7319828BA49d91E",
-//   explorerAddress: "https://explorer.rsk.co",
-//   explorerTokenTab: "?__tab=tokens%20transfers",
-//   secondsPerBlock: 30,
-//   rpc: "https://public-node.rsk.co",
-//   feePercentageDivider: 10_000,
-//   tokenPrefix: "r",
-//   env: ENVIRONMENTS.MAINNET,
-// };
-
 import { NetworkConfig } from "@/store/session/types";
 
 
