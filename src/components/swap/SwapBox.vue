@@ -94,7 +94,7 @@
                 <button
                   class="btn btn-primary py-3 rounded w-50"
                   :disabled="!walletConnected"
-                  @click="onSubmit"
+                  @click="onSwap"
                 >
                   swap tokens
                 </button>
@@ -111,6 +111,11 @@
 import { defineComponent } from "vue";
 import { createNamespacedHelpers } from "vuex";
 
+import * as constants from "@/store/constants";
+import ERC20_ABI from "@/constants/abis/erc20.json";
+import BRIDGE_ABI from "@/constants/abis/bridge.json";
+
+import Footer from "@/layouts/Footer.vue";
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 
@@ -183,6 +188,115 @@ export default defineComponent({
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
     },
+    async onApprove() {
+      if (!this.enabled) {
+        console.error("web3 session not instantiated or connected!");
+        return;
+      }
+
+      if (!this.swapFrom.address) {
+        // TODO: add warning popup or disable approve button if no token selected?
+        console.error("Selected token has no provided address!");
+        return;
+      }
+
+      const tokenAddress = this.swapFrom.address;
+      try {
+        this.showSpinner = true;
+        const receipt = await this.WEB3_APPROVE_TOKEN({
+          tokenAddress,
+          accountAddress: this.account,
+        });
+        console.info("approval receipt", receipt);
+
+        this.hasAllowance = true;
+        this.showSpinner = false;
+      } catch (err) {
+        this.showSpinner = false;
+        this.hasAllowance = false;
+
+        console.error("approval error: ", err);
+      }
+    },
+    async onSwap() {
+      console.log("on swap!");
+      this.showSpinner = true;
+
+      // confirm with metamask
+      const signedData = await this.signWithMetamask(); // needs to match what is in contract
+      // calll swap
+      if (!signedData) {
+        // todo: display error
+        return null;
+      }
+
+      const estimatedGasFee = await fetch(
+        `${process.env.VUE_APP_RELAYER_API}/estimated-gas`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        }
+      );
+
+      try {
+        // todo: is this really the endpoint?
+        const response = await fetch(
+          // 0xCa1D8715989D70173DdaE7e7b2111f49dE88d1c4
+          `${process.env.VUE_APP_RELAYER_API}/swap`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            // todo: what is the body of this request?
+            body: JSON.stringify({
+              claimData: {
+                toAddress: "",
+                amount: 0, //amountInWei
+                blockHash: "",
+                // what else?
+              },
+              deadline: 0,
+              relayerAddress: "",
+              v: signedData.v,
+              r: signedData.r,
+              s: signedData.s,
+              estimatedGasFee: 0,
+            }),
+          }
+        );
+
+        console.log("swap response: ", response);
+      } catch (err) {
+        console.error("couldnt swap", err);
+      } finally {
+        this.showSpinner = false;
+      }
+    },
+    async signWithMetamask() {
+      console.log("sign with metamask");
+
+      // get contract
+      const contract = new this.web3.eth.Contract(
+        BRIDGE_ABI,
+        this.network.bridge
+      );
+
+      try {
+        const nonce = await contract.methods.nonces(this.account).call();
+        const signedData = await this.signMessage([
+          this.account,
+          JSON.stringify(this.parseMessageToSign(nonce)),
+        ]);
+      } catch (err) {
+        console.error("couldnt sign message", err);
+      }
+      return null;
+    },
+    parseMessageToSign(nonce) {},
   },
 });
 </script>
