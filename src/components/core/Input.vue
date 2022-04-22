@@ -55,8 +55,9 @@ export default {
   // background-color: $darkSecondaryBackground;
   box-sizing: border-box;
 
-  &::-webkit-input-placeholder {
-    font-size: 0.75rem;
+  &::placeholder {
+    font-size: 0.75rem !important;
+    text-transform: lowercase !important;
   }
 
   &.size-large {
