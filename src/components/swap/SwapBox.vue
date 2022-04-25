@@ -15,9 +15,14 @@
                 <span
                   class="input-note"
                   v-if="walletConnected && swapFrom.address"
+                  @click="assignMaxValueToSwapValue"
+                  @mouseover="toggleshowMaxTooltip"
+                  @mouseleave="toggleshowMaxTooltip"
                 >
-                  Balance: {{ this.swapFrom.balance }}
-                  {{ getTokenByAddress(swapFrom.address).symbol }}
+                  <div v-if="showMaxTooltip" class="tooltip-balance">
+                    <span> max: {{ this.swapFrom.balance }}</span>
+                  </div>
+                  max: {{ this.swapFrom.balance }}
                 </span>
                 <SelectTokenModal v-model="swapFrom" />
               </div>
@@ -25,7 +30,7 @@
           </div>
         </div>
         <div>
-          <button class="p-3 rounded my-4 btn-arrow">
+          <button class="p-3 rounded btn-arrow">
             <i class="fa-solid fa-arrow-right-arrow-left fa-2xl"></i>
           </button>
         </div>
@@ -37,13 +42,6 @@
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
               >
-                <span
-                  class="input-note"
-                  v-if="walletConnected && swapTo.address"
-                >
-                  Balance: {{ this.swapTo.balance }}
-                  {{ getTokenByAddress(swapTo.address).symbol }}
-                </span>
                 <SelectTokenModal v-model="swapTo" />
               </div>
             </div>
@@ -60,7 +58,7 @@
                   :disabled="!walletConnected && swapFrom.address"
                 >
                   <span :class="fontSizeConnectedAddress"
-                    >Connected address</span
+                    >connected address</span
                   >
                   <br />
                   <div v-if="walletConnected" class="text">
@@ -75,7 +73,7 @@
                   :disabled="!walletConnected || !hasAllowance"
                   @click="onSubmit"
                 >
-                  <span v-if="!walletConnected"> Different address </span>
+                  <span v-if="!walletConnected"> different address </span>
                   <div
                     v-else
                     class="d-flex w-100 justify-content-center align-items-center"
@@ -99,7 +97,7 @@
                   :disabled="!walletConnected && swapFrom.address"
                   @click.prevent="onApprove"
                 >
-                  Approve
+                  approve
                 </button>
               </div>
               <div :class="[hasAllowance && walletConnected ? 'col-md-12 justify-content-center' : 'col-md-6 col-sm-12 mb-3']">
@@ -108,7 +106,7 @@
                   :disabled="!walletConnected || !hasAllowance"
                   @click="onSubmit"
                 >
-                  Swap tokens
+                  swap tokens
                 </button>
               </div>
             </div>
@@ -174,6 +172,7 @@ export default defineComponent({
       },
       destinationAccount: "",
       hasAllowance: false,
+      showMaxTooltip: false,
     };
   },
   computed: {
@@ -237,6 +236,13 @@ export default defineComponent({
         console.error("approval error: ", err);
       }
     },
+    assignMaxValueToSwapValue() {
+      this.swapFrom.value = this.swapFrom.balance;
+    },
+
+    toggleshowMaxTooltip() {
+      this.showMaxTooltip = !this.showMaxTooltip;
+    },
   },
 });
 </script>
@@ -244,7 +250,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .swap-box {
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
   padding: 0rem 3rem;
   background-color: $darkBackground;
   border-radius: 24px;
@@ -274,8 +280,13 @@ export default defineComponent({
   .input-holder {
     display: flex;
     justify-content: space-between;
+    position: relative;
     input {
       width: 40%;
+      font-size: 0.9rem;
+      &::placeholder {
+        font-size: 0.9rem;
+      }
     }
   }
   input {
@@ -292,7 +303,8 @@ export default defineComponent({
   }
   .input-note {
     font-size: 14px;
-    width: 80%;
+    cursor: pointer;
+    width: 52%;
     text-align: right;
     font-weight: 400;
     color: $grayText;
@@ -335,6 +347,8 @@ export default defineComponent({
   background-color: $primary;
   border: none;
   color: $lightGray;
+  margin-bottom: 1.5rem !important;
+  margin-top: calc(1.5rem + 25px) !important;
 }
 
 #diferentAddress {
@@ -351,6 +365,7 @@ export default defineComponent({
     &::placeholder {
       color: white !important;
       font-size: 14px;
+      text-transform: lowercase !important;
     }
 
     &:disabled {
@@ -360,6 +375,41 @@ export default defineComponent({
   .clipboard-icon {
     cursor: pointer;
     width: 14px;
+  }
+}
+.tooltip-balance {
+  background-color: black;
+  border-radius: 8px;
+  font-weight: 500;
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+  max-height: 28px;
+  text-align: center;
+  position: absolute;
+  bottom: 80%;
+  left: 58%;
+  z-index: 2000;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+
+  &:before {
+    content: "";
+    display: block;
+    width: 0;
+    height: 0;
+    position: absolute;
+
+    border-left: 8px solid transparent;
+    border-top: 8px solid black;
+    border-right: 8px solid transparent;
+    left: 50%;
+    top: 26px;
+  }
+  span {
+    white-space: nowrap;
   }
 }
 </style>

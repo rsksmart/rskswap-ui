@@ -26,15 +26,17 @@
         >
           <div class="row no-gutters">
             <div class="col-10">
-              <div class="row no-gutters">
-                <div class="col-2">
-                  <img
-                    class="token-image"
-                    :src="token.icon"
-                    :alt="`${token.token} logo`"
-                  />
+              <div class="ml-2 row no-gutters">
+                <div class="col-1">
+                  <div class="row justify-content-center">
+                    <img
+                      class="token-image"
+                      :src="token.icon"
+                      :alt="`${token.token} logo`"
+                    />
+                  </div>
                 </div>
-                <div class="col-7">
+                <div class="col-8">
                   <div class="d-flex align-items-center">
                     <h3 class="token-name text-left">
                       {{ token.token }}
@@ -45,8 +47,10 @@
                   </div>
                 </div>
                 <div class="col-3">
-                  <div class="d-flex align-items-center justify-content-end">
-                    <span class="description"> {{ token.balance || 0 }} </span>
+                  <div class="row justify-content-end">
+                    <span class="description">
+                      {{ token.balance || 0 }}
+                    </span>
                   </div>
                 </div>
               </div>

@@ -8,7 +8,7 @@
       @click="openModal"
     >
       <template v-if="modelValue.address && selectedToken">
-        <div class="d-flex mr-3">
+        <div class="d-flex">
           <img
             class="token-image"
             :src="selectedToken.icon"
@@ -19,10 +19,10 @@
           </h3>
         </div>
       </template>
-      <template v-else><span class="py-1">Select a token</span> </template>
+      <template v-else><span class="py-1">select a token</span> </template>
       <i class="ml-2 fa-solid fa-angle-down"></i>
     </Button>
-    <Modal ref="modal" title="Select a token" no-body-padding>
+    <Modal ref="modal" title="select a token" no-body-padding>
       <template v-if="manageTokenListsVisibility" v-slot:headerTitle>
         <Button
           class="back-to-select-token-button svg-image-to-white"
@@ -51,6 +51,7 @@ import SelectToken from "@/components/shared/select-token/SelectToken.vue";
 import { createNamespacedHelpers } from "vuex";
 
 const { mapGetters, mapState } = createNamespacedHelpers("session");
+
 export default {
   name: "SelectTokenModal",
   components: {
@@ -128,6 +129,7 @@ export default {
   .token-name {
     font-size: 16px;
     margin: 0;
+    text-align: right;
     text-transform: uppercase;
     .full-name {
       font-size: 12px;
