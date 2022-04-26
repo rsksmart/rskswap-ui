@@ -24,12 +24,12 @@
                   </div>
                   max: {{ this.swapFrom.balance }}
                 </span>
-                <SelectTokenModal v-model="swapFrom" />
+                <SelectTokenModal v-model="swapFrom" :allowSelect="false" />
               </div>
             </div>
           </div>
         </div>
-        <div>
+        <div v-if="false">
           <button class="p-3 rounded btn-arrow">
             <i class="fa-solid fa-arrow-right-arrow-left fa-2xl"></i>
           </button>
@@ -42,7 +42,7 @@
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
               >
-                <SelectTokenModal v-model="swapTo" />
+                <SelectTokenModal v-model="swapTo" :allowSelect="false" />
               </div>
             </div>
           </div>

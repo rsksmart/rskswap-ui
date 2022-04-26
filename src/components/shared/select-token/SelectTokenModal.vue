@@ -20,23 +20,11 @@
         </div>
       </template>
       <template v-else><span class="py-1">select a token</span> </template>
-      <i class="ml-2 fa-solid fa-angle-down"></i>
+      <i v-if="allowSelect" class="ml-2 fa-solid fa-angle-down"></i>
     </Button>
     <Modal ref="modal" title="select a token" no-body-padding>
-      <template v-if="manageTokenListsVisibility" v-slot:headerTitle>
-        <Button
-          class="back-to-select-token-button svg-image-to-white"
-          variant="text"
-          noPadding
-          @click="closeManageTokenLists"
-        >
-          <i class="fa-solid fa-arrow-left"></i>
-        </Button>
-        <h3 class="header-title">Manage</h3>
-      </template>
 
       <SelectToken
-        v-if="!manageTokenListsVisibility"
         :model-value="modelValue"
         @selectToken="selectToken"
       />
@@ -61,6 +49,7 @@ export default {
   },
   props: {
     modelValue: {},
+    allowSelect: 0,
   },
   data() {
     return {
@@ -82,17 +71,12 @@ export default {
   },
   methods: {
     openModal() {
-      this.manageTokenListsVisibility = false;
-      this.$refs["modal"].show();
+      if(this.allowSelect){
+        this.$refs["modal"].show();
+      }
     },
     hideModal() {
       this.$refs["modal"].hide();
-    },
-    openManageTokenLists() {
-      this.manageTokenListsVisibility = true;
-    },
-    closeManageTokenLists() {
-      this.manageTokenListsVisibility = false;
     },
     async selectToken(token) {
       if (token.address !== this.modelValue.address) {
