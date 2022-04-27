@@ -70,7 +70,7 @@
                 <div
                   id="diferentAddress"
                   class="rounded p-3"
-                  :disabled="!walletConnected || !hasAllowance"
+                  :disabled="!walletConnected"
                   @click="onSubmit"
                 >
                   <span v-if="!walletConnected"> different address </span>
@@ -90,20 +90,10 @@
                   </div>
                 </div>
               </div>
-              <div class="col-md-6 col-sm-12 mb-3">
+              <div class="col-md-12 justify-content-center">
                 <button
-                  v-if="!hasAllowance"
-                  class="btn btn-primary w-100 py-3 rounded"
-                  :disabled="!walletConnected && swapFrom.address"
-                  @click.prevent="onApprove"
-                >
-                  approve
-                </button>
-              </div>
-              <div :class="[hasAllowance && walletConnected ? 'col-md-12 justify-content-center' : 'col-md-6 col-sm-12 mb-3']">
-                <button
-                  class="btn btn-primary py-3 rounded" :class="[hasAllowance ? 'w-50' : 'w-100']"
-                  :disabled="!walletConnected || !hasAllowance"
+                  class="btn btn-primary py-3 rounded w-50" 
+                  :disabled="!walletConnected"
                   @click="onSubmit"
                 >
                   swap tokens
@@ -120,11 +110,11 @@
 <script>
 import { defineComponent } from "vue";
 import { createNamespacedHelpers } from "vuex";
-import * as constants from "@/store/constants";
 
 import Footer from "@/layouts/Footer.vue";
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
-import { getDefaultSwapFrom, getDefaultSwapTo, getTokenAllowance } from "@/utils/token-binding";
+import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
+import { BigNumber} from 'bignumber.js';
 
 const { mapState, mapGetters, mapActions } = createNamespacedHelpers("session");
 
@@ -143,19 +133,8 @@ export default defineComponent({
     },
     async swapFrom(model) {
       if (model) {
-        this.hasAllowance = false;
-        const allowance = await getTokenAllowance(this.web3, model, this.network.swapRbtcProxyAddress);
-        this.hasAllowance = allowance > 0;
+        // TODO: Call the method that gets the gas fee and calculate swapTo.value
       }
-      return 0;
-    },
-    async swapTo(model) {
-      if (model) {
-        this.swapTo.balance = this.web3.utils.fromWei(
-          await this.web3.eth.getBalance(this.account)
-        );
-      }
-      return 0;
     },
   },
   data() {
@@ -171,7 +150,6 @@ export default defineComponent({
         value: "",
       },
       destinationAccount: "",
-      hasAllowance: false,
       showMaxTooltip: false,
     };
   },
@@ -194,52 +172,15 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions([constants.WEB3_APPROVE_TOKEN]),
-
     getTokenByAddress(address) {
       return this.allTokens.find((token) => token.address === address);
     },
     async pasteClipboard() {
       this.destinationAccount = await navigator.clipboard.readText();
     },
-    async onApprove() {
-      // TODO: fetch alllowance on connect - different function though-
-      if (!this.enabled) {
-        console.error("web3 session not instantiated or connected!");
-        return;
-      }
-
-      if (!this.swapFrom.address) {
-        // TODO: add warning popup or disable approve button if no token selected?
-        console.error("Selected token has no provided address!");
-        return;
-      }
-
-      const tokenAddress = this.swapFrom.address;
-      try {
-        this.showSpinner = true;
-        const receipt = await this.WEB3_APPROVE_TOKEN({
-          tokenAddress,
-          accountAddress: this.account,
-          network: this.network,
-        });
-        console.info("approval receipt", receipt);
-
-        // set allowance to true
-        this.hasAllowance = true;
-        this.showSpinner = false;
-      } catch (err) {
-        // set allowance to false
-        this.showSpinner = false;
-        this.hasAllowance = false;
-
-        console.error("approval error: ", err);
-      }
-    },
     assignMaxValueToSwapValue() {
       this.swapFrom.value = this.swapFrom.balance;
     },
-
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
     },
