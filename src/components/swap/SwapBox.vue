@@ -154,11 +154,13 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState(["enabled"]),
-    ...mapState(["account"]),
-    ...mapState(["network"]),
-    ...mapState(["web3"]),
-    ...mapGetters(["allTokens"]),
+    ...mapState({
+      enabled: state => state.enabled,
+      account: state => state.account,
+      network: state => state.network,
+      web3: state => state.web3,
+      allTokens: state => state.allTokens
+    }),
     walletConnected() {
       return this.enabled;
     },
