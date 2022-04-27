@@ -114,9 +114,8 @@ import { createNamespacedHelpers } from "vuex";
 import Footer from "@/layouts/Footer.vue";
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
-import { BigNumber} from 'bignumber.js';
 
-const { mapState, mapGetters, mapActions } = createNamespacedHelpers("session");
+const { mapState } = createNamespacedHelpers("session");
 
 export default defineComponent({
   name: "SwapBox",
