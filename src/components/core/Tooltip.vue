@@ -42,9 +42,8 @@ export default {
       this.showTooltip = false;
     },
     updateTooltipHolderPosition() {
-      this.tooltipHolderPosition = this.$refs[
-        "tooltip-holder"
-      ].getBoundingClientRect();
+      this.tooltipHolderPosition =
+        this.$refs["tooltip-holder"].getBoundingClientRect();
     },
   },
 };

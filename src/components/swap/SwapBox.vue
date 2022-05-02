@@ -92,7 +92,7 @@
               </div>
               <div class="col-md-12 justify-content-center">
                 <button
-                  class="btn btn-primary py-3 rounded w-50" 
+                  class="btn btn-primary py-3 rounded w-50"
                   :disabled="!walletConnected"
                   @click="onSubmit"
                 >
@@ -111,7 +111,6 @@
 import { defineComponent } from "vue";
 import { createNamespacedHelpers } from "vuex";
 
-import Footer from "@/layouts/Footer.vue";
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 
@@ -121,13 +120,12 @@ export default defineComponent({
   name: "SwapBox",
   components: {
     SelectTokenModal,
-    Footer,
   },
   watch: {
-    async account(value){
-      if(value){
+    async account(value) {
+      if (value) {
         this.swapFrom = await getDefaultSwapFrom(this.web3);
-        this.swapTo = await getDefaultSwapTo(this.web3);    
+        this.swapTo = await getDefaultSwapTo(this.web3);
       }
     },
     async swapFrom(model) {
@@ -154,11 +152,11 @@ export default defineComponent({
   },
   computed: {
     ...mapState({
-      enabled: state => state.enabled,
-      account: state => state.account,
-      network: state => state.network,
-      web3: state => state.web3,
-      allTokens: state => state.allTokens
+      enabled: (state) => state.enabled,
+      account: (state) => state.account,
+      network: (state) => state.network,
+      web3: (state) => state.web3,
+      allTokens: (state) => state.allTokens,
     }),
     walletConnected() {
       return this.enabled;

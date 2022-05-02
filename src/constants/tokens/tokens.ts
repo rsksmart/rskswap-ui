@@ -23,7 +23,6 @@ export const RKOVWBTC_TOKEN: Token = {
   type: "ERC20",
 };
 
-
 export const WBTC_TOKEN: Token = {
   token: "WBTC",
   name: "Wrapped BTC",
@@ -38,10 +37,10 @@ export const WBTC_TOKEN: Token = {
 const getAllTokens = () => {
   switch (process.env.VUE_APP_ENV) {
     case ENVIRONMENTS.MAINNET:
-      return [RBTC_TOKEN, WBTC_TOKEN]
+      return [RBTC_TOKEN, WBTC_TOKEN];
     default: // TESTNET
-      return [RBTC_TOKEN, RKOVWBTC_TOKEN]
+      return [RBTC_TOKEN, RKOVWBTC_TOKEN];
   }
-}
+};
 
 export const ALL_TOKENS: Token[] = getAllTokens();

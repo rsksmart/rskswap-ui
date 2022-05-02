@@ -1,6 +1,5 @@
 import { NetworkConfig } from "@/store/session/types";
 
-
 export const RSK_CONFIG: NetworkConfig = {
   networkId: parseInt(process.env.VUE_APP_CHAIN_ID || "31"),
   name: process.env.VUE_APP_NETWORK_NAME || "RSK Testnet",

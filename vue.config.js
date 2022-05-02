@@ -1,8 +1,5 @@
-const { version } = require('./package.json')
-const path = require('path')
-
 module.exports = {
-    css: {
+  css: {
     loaderOptions: {
       sass: {
         additionalData: `
@@ -12,10 +9,10 @@ module.exports = {
     },
   },
   lintOnSave: false,
-  transpileDependencies: ['vuetify'],
+  transpileDependencies: ["vuetify"],
   pluginOptions: {
     vuetify: {
       // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vuetify-loader
     },
   },
-}
+};

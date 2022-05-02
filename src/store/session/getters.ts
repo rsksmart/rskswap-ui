@@ -7,7 +7,7 @@ import { Token } from "@/types/token";
 // export const getters: GetterTree<SessionState, RootState> = {};
 
 export const getters: GetterTree<SessionState, RootState> = {
-    allTokens(): Token[] {
-        return ALL_TOKENS;
-    },
+  allTokens(): Token[] {
+    return ALL_TOKENS;
+  },
 };
