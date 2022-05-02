@@ -24,8 +24,5 @@ jobs:
     - name: run lint
       run: npm run lint
 
-    - name: run prettier
-      run: npm run prettier
-
     - name: unit test
       run: npm run test:unit
