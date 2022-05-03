@@ -6,7 +6,7 @@ export type ChainConfig = {
   name: string;
 };
 
-export type NetworkConfig = { 
+export type NetworkConfig = {
   networkId: number;
   name: string;
   localStorageName: string;

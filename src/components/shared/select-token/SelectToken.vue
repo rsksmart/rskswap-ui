@@ -69,18 +69,14 @@
 </template>
 
 <script>
-import Button from "@/components/core/Button.vue";
 import Input from "@/components/core/Input.vue";
-import InfoTooltip from "@/components/shared/InfoTooltip.vue";
 import { createNamespacedHelpers } from "vuex";
 
 const { mapState, mapGetters } = createNamespacedHelpers("session");
 export default {
   name: "SelectToken",
   components: {
-    Button,
     Input,
-    InfoTooltip,
   },
   props: {
     modelValue: {},

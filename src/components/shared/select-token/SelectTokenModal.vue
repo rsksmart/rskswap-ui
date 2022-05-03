@@ -23,11 +23,7 @@
       <i v-if="allowSelect" class="ml-2 fa-solid fa-angle-down"></i>
     </Button>
     <Modal ref="modal" title="select a token" no-body-padding>
-
-      <SelectToken
-        :model-value="modelValue"
-        @selectToken="selectToken"
-      />
+      <SelectToken :model-value="modelValue" @selectToken="selectToken" />
     </Modal>
   </div>
 </template>
@@ -49,7 +45,7 @@ export default {
   },
   props: {
     modelValue: {},
-    allowSelect: 0,
+    allowSelect: {},
   },
   data() {
     return {
@@ -71,7 +67,7 @@ export default {
   },
   methods: {
     openModal() {
-      if(this.allowSelect){
+      if (this.allowSelect) {
         this.$refs["modal"].show();
       }
     },
