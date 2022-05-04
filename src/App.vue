@@ -3,6 +3,7 @@
     <NavBar />
     <router-view />
     <Footer />
+    <Notification :error="error" />
   </div>
 </template>
 
@@ -31,7 +32,28 @@
 <script>
 import NavBar from "@/layouts/NavBar";
 import Footer from "@/layouts/Footer";
+import Notification from "@/components/shared/Notification.vue";
+import { UserNotificationError } from "@/types/error";
+
 export default {
-  components: { NavBar, Footer },
+  components: { NavBar, Footer, Notification },
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  data() {
+    return {
+      error: {},
+    };
+  },
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  errorCaptured(err) {
+    // all user notification errors are handled here
+    if (err instanceof UserNotificationError) {
+      this.error = {
+        message: err.message,
+        data: err.errorData,
+        code: err.errorCode,
+      };
+    }
+    return false;
+  },
 };
 </script>

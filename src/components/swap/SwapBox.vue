@@ -113,6 +113,7 @@ import { createNamespacedHelpers } from "vuex";
 
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
+import { UserNotificationError, ApiError } from "@/types/error";
 
 const { mapState } = createNamespacedHelpers("session");
 
@@ -179,6 +180,11 @@ export default defineComponent({
     },
     assignMaxValueToSwapValue() {
       this.swapFrom.value = this.swapFrom.balance;
+      throw new UserNotificationError(
+        "Some message to display",
+        "23432",
+        "Additional data to be shown"
+      );
     },
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
