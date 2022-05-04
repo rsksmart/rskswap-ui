@@ -113,9 +113,8 @@ import { createNamespacedHelpers } from "vuex";
 import BigNumber from "bignumber.js";
 import moment from "moment";
 
-import * as constants from "@/store/constants";
 import ERC20_ABI from "@/constants/abis/erc20.json";
-import BRIDGE_ABI from "@/constants/abis/bridge.json";
+import { signTypes } from "@/constants/message";
 
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
@@ -303,18 +302,11 @@ export default defineComponent({
       }
     },
     async signWithMetamask(estimatedGas) {
-      const contract = new this.web3.eth.Contract(
-        BRIDGE_ABI,
-        this.network.bridge
-      );
-
       try {
-        const nonce = await contract.methods.nonces(this.account).call();
-        const signedData = await this.signMessage([
+        return this.signMessage([
           this.account,
-          JSON.stringify(this.parseMessageToSign(estimatedGas, nonce)),
+          JSON.stringify(this.parseMessageToSign(estimatedGas)),
         ]);
-        return signedData;
       } catch (err) {
         console.error("couldnt sign message", err);
       }
@@ -347,13 +339,12 @@ export default defineComponent({
     parseMessageToSign(estimatedGas) {
       return {
         domain: {
-          name: "RSK Token Swap", // todo: what is the correct name?
+          name: "RSK Relayer",
           version: "1",
           chainId: process.env.VUE_APP_CHAIN_ID,
-          verifyingContract: "bridge address maybe?", // this.sharedState.currentConfig.bridge
+          verifyingContract: process.env.VUE_APP_RELAYER_ADDRESS,
         },
         message: {
-          // swapData: {
           from: this.account,
           toAddress: this.transferAddress,
           address: this.transferAddress,
@@ -361,31 +352,10 @@ export default defineComponent({
           chainId: process.env.VUE_APP_CHAIN_ID,
           fee: estimatedGas, // this.amountInWei
           deadline: moment().add(3, "hours").unix().toString(), // this.deadline
-          // },
-          // deadline: "what?", // this.deadline
           relayerAddress: process.env.VUE_APP_RELAYER_ADDRESS,
-          // transactionHash: "??", //this.transaction.transactionHash // todo: transactionHash not needed?
-          // nonce, // todo: nonce not needed?
         },
         primaryType: "Claim",
-        types: {
-          EIP712Domain: [
-            { name: "name", type: "string" },
-            { name: "version", type: "string" },
-            { name: "chainId", type: "uint256" },
-            { name: "verifyingContract", type: "address" },
-          ],
-          Claim: [
-            { name: "to", type: "address" },
-            { name: "amount", type: "uint256" },
-            { name: "transactionHash", type: "bytes32" },
-            { name: "originChainId", type: "uint256" },
-            { name: "relayer", type: "address" },
-            { name: "fee", type: "uint256" },
-            { name: "nonce", type: "uint256" },
-            { name: "deadline", type: "uint256" },
-          ],
-        },
+        types: signTypes,
       };
     },
   },
