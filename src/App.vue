@@ -3,7 +3,7 @@
     <NavBar />
     <router-view />
     <Footer />
-    <Notification :error="error" />
+    <Notification :error="error" :delay="5000" />
   </div>
 </template>
 
