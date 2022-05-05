@@ -33,7 +33,7 @@
 import NavBar from "@/layouts/NavBar";
 import Footer from "@/layouts/Footer";
 import Notification from "@/components/shared/Notification.vue";
-import { UserNotificationError } from "@/types/error";
+import { ApiError, UserNotificationError } from "@/types/error";
 
 export default {
   components: { NavBar, Footer, Notification },
@@ -46,7 +46,7 @@ export default {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   errorCaptured(err) {
     // all user notification errors are handled here
-    if (err instanceof UserNotificationError) {
+    if (err instanceof UserNotificationError || err instanceof ApiError) {
       this.error = {
         message: err.message,
         data: err.errorData,
