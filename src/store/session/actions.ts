@@ -22,13 +22,12 @@ export const actions: ActionTree<SessionState, RootState> = {
                 package: WalletConnectProvider,
                 options: {
                   rpc: {
-                    30: "https://public-node.rsk.co",
                     31: "https://public-node.testnet.rsk.co",
                   },
                 },
               },
             },
-            supportedChains: [30, 31],
+            supportedChains: [31],
           })
         : state.rLoginInstance;
     rLogin
