@@ -5,6 +5,9 @@ Project for Swaping RBTC to rWBTC independently from the claim (and the other wa
 yarn install
 ```
 
+## Environment variables
+Duplicate .env.example and rename to .env
+
 ### Compiles and hot-reloads for development
 ```
 yarn serve
