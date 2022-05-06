@@ -13,6 +13,7 @@ import { gasPriceHex, transactionCallback } from "@/utils/transactions";
 
 export const actions: ActionTree<SessionState, RootState> = {
   [constants.SESSION_CONNECT_WEB3]: async ({ commit, state }) => {
+    const chain = process.env.VUE_APP_CHAIN_ID ? +process.env.VUE_APP_CHAIN_ID : 31;
     const rLogin =
       state.rLoginInstance === undefined
         ? new RLogin({
@@ -28,7 +29,8 @@ export const actions: ActionTree<SessionState, RootState> = {
                 },
               },
             },
-            supportedChains: [30, 31],
+
+            supportedChains: [chain],
           })
         : state.rLoginInstance;
     rLogin
