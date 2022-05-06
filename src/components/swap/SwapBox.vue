@@ -137,13 +137,14 @@ export default defineComponent({
       if (model) {
         this.hasAllowance = false;
         let balance;
-        // native tokens needs to approval?
         if (model.type === "NATIVE") {
+          if (!model.decimals) {
+            console.error("decimals not defined for model ", model.token);
+          }
           balance = await this.web3.eth.getBalance(this.account);
 
-          // this.swapFrom.balance = this.web3.utils.fromWei(this.account); // todo: why this doesnt work?
           this.swapFrom.balance = new BigNumber(balance).shiftedBy(
-            -model.decimals || -18
+            -model.decimals
           );
         } else {
           const tokenInst = new this.web3.eth.Contract(
@@ -152,12 +153,6 @@ export default defineComponent({
           );
           balance = await tokenInst.methods.balanceOf(this.account).call();
           this.swapFrom.balance = this.web3.utils.fromWei(balance);
-
-          const spenderAddress = "0x7c77704007C9996Ee591C516f7319828BA49d91E"; //
-          const allowance = await tokenInst.methods
-            .allowance(this.account, spenderAddress)
-            .call();
-          this.hasAllowance = allowance > 0;
         }
       }
     },
@@ -214,45 +209,20 @@ export default defineComponent({
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
     },
-    async onApprove() {
-      if (!this.enabled) {
-        console.error("web3 session not instantiated or connected!");
-        return;
-      }
-
-      if (!this.swapFrom.address) {
-        // TODO: add warning popup or disable approve button if no token selected?
-        console.error("Selected token has no provided address!");
-        return;
-      }
-
-      const tokenAddress = this.swapFrom.address;
-      try {
-        this.showSpinner = true;
-        const receipt = await this.WEB3_APPROVE_TOKEN({
-          tokenAddress,
-          accountAddress: this.account,
-        });
-        console.info("approval receipt", receipt);
-
-        this.hasAllowance = true;
-        this.showSpinner = false;
-      } catch (err) {
-        this.showSpinner = false;
-        this.hasAllowance = false;
-
-        console.error("approval error: ", err);
-      }
-    },
     async onSwap() {
       if (!this.swapFrom.value) {
         console.error("You need to estimate a swap amount!");
         return;
       }
 
+      if (!this.swapFrom.decimals) {
+        console.error("Origin token has no decimals defined!");
+        return;
+      }
+
       this.showSpinner = true;
 
-      const estimatedGasFee = await fetch(
+      const estimatedGasResponse = await fetch(
         `${process.env.VUE_APP_RELAYER_ENDPOINT}/estimated-gas`,
         {
           method: "POST",
@@ -260,14 +230,27 @@ export default defineComponent({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            amount: this.swapFrom.value,
+            amount: new BigNumber(this.swapFrom.value)
+              .shiftedBy(this.swapFrom.decimals)
+              .toString(),
             unitType: "wei",
           }),
         }
       );
 
-      const signedData = await this.signWithMetamask(estimatedGasFee); // needs to match what is in contract
-      // calll swap
+      if (!estimatedGasResponse.ok) {
+        console.error(
+          "Couldnt estimate gas fee, error: ",
+          estimatedGasResponse.error
+        );
+        return;
+      }
+
+      const estimatedGasFee = await estimatedGasResponse.json();
+      const deadline = Number(moment().add(3, "hours").unix());
+
+      const signedData = await this.signWithMetamask(deadline); // needs to match what is in contract
+
       if (!signedData) {
         // todo: display error
         console.error("no signed data!");
@@ -284,8 +267,7 @@ export default defineComponent({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              swapData: signedData.message.swapData,
-              deadline: signedData.message.deadline,
+              swapData: this.parseSwapData(deadline),
               relayerAddress: process.env.VUE_APP_RELAYER_ADDRESS,
               v: signedData.v,
               r: signedData.r,
@@ -295,17 +277,27 @@ export default defineComponent({
             }),
           }
         );
+
+        const receipt = await response.json();
+
+        console.log("swap receipt", receipt);
       } catch (err) {
         console.error("couldnt swap", err);
       } finally {
         this.showSpinner = false;
       }
     },
-    async signWithMetamask(estimatedGas) {
+    async signWithMetamask(deadline) {
       try {
+        const CONTRACT = await new this.web3.eth.Contract(
+          ERC20_ABI,
+          this.swapFrom.address
+        );
+        const nonce = await CONTRACT.methods.nonces(this.account).call();
+
         return this.signMessage([
           this.account,
-          JSON.stringify(this.parseMessageToSign(estimatedGas)),
+          JSON.stringify(this.parseMessageToSign(nonce, deadline)),
         ]);
       } catch (err) {
         console.error("couldnt sign message", err);
@@ -335,27 +327,34 @@ export default defineComponent({
         );
       });
     },
-    // parseMessageToSign(nonce) {
-    parseMessageToSign(estimatedGas) {
+    parseMessageToSign(nonce, deadline) {
       return {
         domain: {
           name: "RSK Relayer",
           version: "1",
-          chainId: process.env.VUE_APP_CHAIN_ID,
-          verifyingContract: process.env.VUE_APP_RELAYER_ADDRESS,
+          chainId: Number(process.env.VUE_APP_CHAIN_ID),
+          verifyingContract: this.swapFrom.address,
         },
         message: {
-          from: this.account,
-          toAddress: this.transferAddress,
-          address: this.transferAddress,
-          amount: this.swapFrom.value,
-          chainId: process.env.VUE_APP_CHAIN_ID,
-          fee: estimatedGas, // this.amountInWei
-          deadline: moment().add(3, "hours").unix().toString(), // this.deadline
-          relayerAddress: process.env.VUE_APP_RELAYER_ADDRESS,
+          owner: this.account,
+          to: this.transferAddress,
+          value: Number(this.swapFrom.value),
+          deadline, // this.deadline
+          nonce: Number(nonce),
         },
-        primaryType: "Claim",
+        primaryType: "Transfer",
         types: signTypes,
+      };
+    },
+    parseSwapData(deadline) {
+      return {
+        fromAddress: this.account,
+        toAddress: this.transferAddress,
+        amount: new BigNumber(this.swapFrom.value)
+          .shiftedBy(this.swapFrom.decimals)
+          .toString(),
+        chainId: process.env.VUE_APP_CHAIN_ID,
+        deadline,
       };
     },
   },

@@ -5,13 +5,10 @@ export const signTypes = {
     { name: "chainId", type: "uint256" },
     { name: "verifyingContract", type: "address" },
   ],
-  Claim: [
+  Transfer: [
+    { name: "owner", type: "address" },
     { name: "to", type: "address" },
-    { name: "amount", type: "uint256" },
-    { name: "transactionHash", type: "bytes32" },
-    { name: "originChainId", type: "uint256" },
-    { name: "relayer", type: "address" },
-    { name: "fee", type: "uint256" },
+    { name: "value", type: "uint256" },
     { name: "nonce", type: "uint256" },
     { name: "deadline", type: "uint256" },
   ],
