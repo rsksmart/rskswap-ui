@@ -19,7 +19,8 @@ export const RKOVWBTC_TOKEN: Token = {
   decimals: 18,
   icon: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png",
   symbol: "rKovWBTC",
-  address: "0xB8ae2CB769255359190Fbce89D3ad38687DA5E65",
+  // address: "0xB8ae2CB769255359190Fbce89D3ad38687DA5E65", // wbtc token
+  address: "0xe8937adC8Fab7346f9D18583C67C6a980eCe6aeD", // anyswap wbtc deployed token on testnet
   type: "ERC20",
 };
 
@@ -30,7 +31,8 @@ export const WBTC_TOKEN: Token = {
   decimals: 18,
   icon: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png",
   symbol: "rWBTC",
-  address: "0xB8ae2CB769255359190Fbce89D3ad38687DA5E65", // TODO: replace with the mainnet address of the WBTC token
+  // address: "0xB8ae2CB769255359190Fbce89D3ad38687DA5E65", // TODO: replace with the mainnet address of the WBTC token
+  address: "0xe8937adC8Fab7346f9D18583C67C6a980eCe6aeD", // anyswap wbtc deployed token on testnet
   type: "ERC20",
 };
 
