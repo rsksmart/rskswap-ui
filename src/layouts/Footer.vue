@@ -1,53 +1,61 @@
 <template>
   <footer class="footer-rsk mb-5">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col ml-0">
-          <div class="row footer-logo mx-0">
-            <span>Built by</span>
-            <div class="col pl-0">
-              <v-img
-                position="center left"
-                src="@/assets/logo-iov.svg"
-                alt="IOV Labs"
-                width="100"
-                contain
-                class="rsk-main-logo"
-              />
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-11">
+          <div class="row align-items-center">
+            <div class="col ml-0">
+              <div class="row footer-logo mx-0">
+                <span>Built by</span>
+                <div class="col pl-0">
+                  <v-img
+                    position="center left"
+                    src="@/assets/logo-iov.svg"
+                    alt="IOV Labs"
+                    width="100"
+                    contain
+                    class="rsk-main-logo"
+                  />
+                </div>
+              </div>
+              <p class="text-left">
+                Copyright © 2021 IOV Labs All rights reserved
+              </p>
             </div>
-          </div>
-          <p class="text-left">Copyright © 2021 IOV Labs All rights reserved</p>
-        </div>
-        <div class="col-7">
-          <div class="row justify-content-center mx-0 footer-links h-100">
-            <a href="https://www.iovlabs.org/" target="_blank">
-              About IOV Labs
-            </a>
-            <a href="https://open-rsk-dev.slack.com/messages/support">Help</a>
-            <a href="https://www.rsk.co/terms-conditions" target="_blank">
-              Terms &amp; Conditions
-            </a>
-          </div>
-        </div>
-        <div class="col">
-          <div
-            class="row justify-content-end align-items-baseline mx-0 footer-icons"
-          >
-            <a href="https://twitter.com/rsksmart" target="_blank">
-              <v-icon>mdi-twitter</v-icon>
-            </a>
-            <a
-              href="https://github.com/rsksmart/tokenbridge-ui"
-              target="_blank"
-            >
-              <v-icon>mdi-github</v-icon>
-            </a>
-            <a
-              href="https://open-rsk-dev.slack.com/messages/support"
-              target="_blank"
-            >
-              <v-icon>mdi-slack</v-icon>
-            </a>
+            <div class="col-7">
+              <div class="row justify-content-center mx-0 footer-links h-100">
+                <a href="https://www.iovlabs.org/" target="_blank">
+                  About IOV Labs
+                </a>
+                <a href="https://open-rsk-dev.slack.com/messages/support"
+                  >Help</a
+                >
+                <a href="https://www.rsk.co/terms-conditions" target="_blank">
+                  Terms &amp; Conditions
+                </a>
+              </div>
+            </div>
+            <div class="col">
+              <div
+                class="row justify-content-end align-items-baseline mx-0 footer-icons"
+              >
+                <a href="https://twitter.com/rsksmart" target="_blank">
+                  <v-icon>mdi-twitter</v-icon>
+                </a>
+                <a
+                  href="https://github.com/rsksmart/tokenbridge-ui"
+                  target="_blank"
+                >
+                  <v-icon>mdi-github</v-icon>
+                </a>
+                <a
+                  href="https://open-rsk-dev.slack.com/messages/support"
+                  target="_blank"
+                >
+                  <v-icon>mdi-slack</v-icon>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
