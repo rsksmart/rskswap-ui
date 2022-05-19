@@ -52,26 +52,25 @@
         <div class="w-100">
           <div class="container-fluid box-button">
             <div class="row gx-4">
-              <div class="col-md-6 col-sm-12 mb-3">
+              <div class="col-md-6 col-sm-12 mb-3" 
+                @click="selectAddressType('connected', $event)">
                 <button
                   :class="paddingConnectedAddress"
-                  :disabled="!walletConnected && swapFrom.address"
+                  :disabled="!walletConnected || typeDestinationAddress !== 'connected'"
                 >
-                  <span :class="fontSizeConnectedAddress"
-                    >connected address</span
-                  >
+                  <span :class="fontSizeConnectedAddress">connected address</span>
                   <br />
                   <div v-if="walletConnected" class="text">
                     <span>{{ account }}</span>
                   </div>
                 </button>
               </div>
-              <div class="col-md-6 col-sm-12 mb-3">
+              <div class="col-md-6 col-sm-12 mb-3" @click="selectAddressType('different', $event)">
                 <div
-                  id="diferentAddress"
-                  class="rounded p-3"
-                  :disabled="!walletConnected"
-                  @click="onSubmit"
+                  id="differentAddress"
+                  class="p-3"
+                  :class="paddingConnectedAddress"
+                  :disabled="!walletConnected || typeDestinationAddress !== 'different'"
                 >
                   <span v-if="!walletConnected"> different address </span>
                   <div
@@ -148,6 +147,7 @@ export default defineComponent({
       },
       destinationAccount: "",
       showMaxTooltip: false,
+      typeDestinationAddress: 'connected',
     };
   },
   computed: {
@@ -182,6 +182,10 @@ export default defineComponent({
     },
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
+    },
+    selectAddressType(type) {
+      console.log(type)
+      this.typeDestinationAddress = type
     },
   },
 });
@@ -291,8 +295,7 @@ export default defineComponent({
   margin-top: calc(1.5rem + 25px) !important;
 }
 
-#diferentAddress {
-  background-color: $gray;
+#differentAddress {
   color: white;
   font-size: 14px;
   .input {
@@ -307,9 +310,8 @@ export default defineComponent({
       font-size: 14px;
       text-transform: lowercase !important;
     }
-
     &:disabled {
-      background-color: $lightGray;
+      background-color: $lightGray !important;
     }
   }
   .clipboard-icon {
