@@ -69,8 +69,7 @@
                 <div
                   id="differentAddress"
                   class="p-3"
-                  :class="paddingConnectedAddress"
-                  :disabled="!walletConnected || typeDestinationAddress !== 'different'"
+                  :class="handleDifferentAddressDisable"
                 >
                   <span v-if="!walletConnected"> different address </span>
                   <div
@@ -166,6 +165,13 @@ export default defineComponent({
         this.walletConnected ? "py-2" : "py-3"
       } rounded w-100`;
     },
+    handleDifferentAddressDisable() {
+      return `btn btn-primary ${
+        this.walletConnected ? "py-2" : "py-3"
+      } rounded w-100 ${
+        !this.walletConnected || this.typeDestinationAddress !== 'different' ? 'differentDisabled' : ''
+      }`;
+    },
     fontSizeConnectedAddress() {
       return this.walletConnected ? "12px" : "14px";
     },
@@ -184,7 +190,6 @@ export default defineComponent({
       this.showMaxTooltip = !this.showMaxTooltip;
     },
     selectAddressType(type) {
-      console.log(type)
       this.typeDestinationAddress = type
     },
   },
@@ -310,14 +315,14 @@ export default defineComponent({
       font-size: 14px;
       text-transform: lowercase !important;
     }
-    &:disabled {
-      background-color: $lightGray !important;
-    }
   }
   .clipboard-icon {
     cursor: pointer;
     width: 14px;
   }
+}
+.differentDisabled {
+    background-color: lightgray;
 }
 .tooltip-balance {
   background-color: black;
