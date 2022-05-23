@@ -92,7 +92,7 @@
                 <button
                   class="btn btn-primary py-3 rounded w-50"
                   :disabled="!walletConnected"
-                  @click="onSubmit"
+                  @click="onSwap"
                 >
                   swap tokens
                 </button>
@@ -108,6 +108,10 @@
 <script>
 import { defineComponent } from "vue";
 import { createNamespacedHelpers } from "vuex";
+import BigNumber from "bignumber.js";
+import moment from "moment";
+
+import ERC20_ABI from "@/constants/abis/erc20.json";
 
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
@@ -128,7 +132,25 @@ export default defineComponent({
     },
     async swapFrom(model) {
       if (model) {
-        // TODO: Call the method that gets the gas fee and calculate swapTo.value
+        this.hasAllowance = false;
+        let balance;
+        if (model.type === "NATIVE") {
+          if (!model.decimals) {
+            console.error("decimals not defined for model ", model.token);
+          }
+          balance = await this.web3.eth.getBalance(this.account);
+
+          this.swapFrom.balance = new BigNumber(balance).shiftedBy(
+            -model.decimals
+          );
+        } else {
+          const tokenInst = new this.web3.eth.Contract(
+            ERC20_ABI,
+            model.address
+          );
+          balance = await tokenInst.methods.balanceOf(this.account).call();
+          this.swapFrom.balance = this.web3.utils.fromWei(balance);
+        }
       }
     },
   },
@@ -175,6 +197,9 @@ export default defineComponent({
     fontSizeConnectedAddress() {
       return this.walletConnected ? "12px" : "14px";
     },
+    transferAddress() {
+      return this.destinationAccount || this.account;
+    },
   },
   methods: {
     getTokenByAddress(address) {
@@ -195,6 +220,174 @@ export default defineComponent({
       if (type === 'connected') {
         this.destinationAccount = '';
       }
+    },
+    async onSwap() {
+      if (!this.swapFrom.value) {
+        console.error("You need to estimate a swap amount!");
+        return;
+      }
+
+      if (!this.swapFrom.decimals) {
+        console.error("Origin token has no decimals defined!");
+        return;
+      }
+
+      this.showSpinner = true;
+
+      const estimatedGasResponse = await fetch(
+        `${process.env.VUE_APP_RELAYER_ENDPOINT}/estimated-gas`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount: new BigNumber(this.swapFrom.value)
+              .shiftedBy(this.swapFrom.decimals)
+              .toString(),
+            unitType: "wei",
+          }),
+        }
+      );
+
+      if (!estimatedGasResponse.ok) {
+        console.error(
+          "Couldnt estimate gas fee, error: ",
+          estimatedGasResponse.error
+        );
+        return;
+      }
+
+      const estimatedGasFee = await estimatedGasResponse.json();
+      let fee = new BigNumber(estimatedGasFee.amount);
+      // estimation of gas gives unnacurate, so we add up on top of the received value.
+      fee = fee.plus(100000);
+      estimatedGasFee.amount = fee.toString();
+
+      const deadline = Number(moment().add(3, "hours").unix());
+      const signedData = await this.signWithMetamask(deadline); // needs to match what is in contract
+
+      if (!signedData) {
+        // todo: display error
+        console.error("no signed data!");
+        return null;
+      }
+
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_RELAYER_ENDPOINT}/swap`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              swapData: this.parseSwapData(deadline),
+              relayerAddress: process.env.VUE_APP_RELAYER_ADDRESS,
+              v: signedData.v,
+              r: signedData.r,
+              s: signedData.s,
+              estimatedGasFee,
+              sideTokenBtcContract: this.swapFrom.address,
+            }),
+          }
+        );
+
+        const receipt = await response.json();
+
+        console.log("swap receipt", receipt);
+      } catch (err) {
+        console.error("couldnt swap", err);
+      } finally {
+        this.showSpinner = false;
+      }
+    },
+    async signWithMetamask(deadline) {
+      try {
+        const CONTRACT = await new this.web3.eth.Contract(
+          ERC20_ABI,
+          this.swapFrom.address
+        );
+
+        const nonce = await CONTRACT.methods.nonces(this.account).call();
+        const tokenName = await CONTRACT.methods.name().call();
+        return this.signMessage([
+          this.account,
+          JSON.stringify(this.parseMessageToSign(nonce, deadline, tokenName)),
+        ]);
+      } catch (err) {
+        console.error("couldnt sign message", err);
+      }
+      return null;
+    },
+    signMessage(params) {
+      return new Promise((resolve, reject) => {
+        this.web3.currentProvider.sendAsync(
+          {
+            method: "eth_signTypedData_v4",
+            params,
+            from: this.account,
+          },
+          (err, result) => {
+            if (err) reject(err);
+            if (result?.error) reject("result with error ", result?.error);
+            if (!result.result) reject(new Error("Empty or undefined result!"));
+
+            const signature = result.result.substring(2);
+            const r = `0x${signature.substring(0, 64)}`;
+            const s = `0x${signature.substring(64, 128)}`;
+            const v = parseInt(signature.substring(128, 130), 16);
+
+            resolve({ r, s, v });
+          }
+        );
+      });
+    },
+    parseMessageToSign(nonce, deadline, tokenName) {
+      const messageData = {
+        domain: {
+          name: tokenName,
+          version: "1",
+          chainId: Number(process.env.VUE_APP_CHAIN_ID),
+          verifyingContract: this.swapFrom.address,
+        },
+        message: {
+          owner: this.account,
+          to: process.env.VUE_APP_RELAYER_ADDRESS,
+          value: new BigNumber(this.swapFrom.value).shiftedBy(this.swapFrom.decimals),
+          deadline,
+          nonce: nonce,
+        },
+        primaryType: "Transfer",
+        types: {
+          EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
+            { name: "chainId", type: "uint256" },
+            { name: "verifyingContract", type: "address" },
+          ],
+          Transfer: [
+            { name: "owner", type: "address" },
+            { name: "to", type: "address" },
+            { name: "value", type: "uint256" },
+            { name: "nonce", type: "uint256" },
+            { name: "deadline", type: "uint256" },
+          ],
+        },
+      };
+
+      return messageData;
+    },
+    parseSwapData(deadline) {
+      return {
+        fromAddress: this.account,
+        toAddress: this.transferAddress,
+        amount: new BigNumber(this.swapFrom.value)
+          .shiftedBy(this.swapFrom.decimals)
+          .toString(),
+        chainId: Number(process.env.VUE_APP_CHAIN_ID),
+        deadline,
+      };
     },
   },
 });
