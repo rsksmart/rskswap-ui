@@ -4,9 +4,9 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <v-img
         alt="Vue logo"
-        src="@/assets/bridge-logo.png"
-        width="233"
-        height="188"
+        src="@/assets/swap-logo.png"
+        width="90"
+        height="90"
       />
       <div class="w-100">
         <div class="row w-100">

@@ -35,6 +35,7 @@ export const getSwapData = async (
     address: token?.address || "",
     balance: balance,
     value: 0,
+    decimals: token?.decimals,
   };
 };
 
