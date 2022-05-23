@@ -115,8 +115,6 @@ import moment from "moment";
 
 import ERC20_ABI from "@/constants/abis/erc20.json";
 
-import { signTypes } from "@/constants/message";
-
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 
@@ -343,14 +341,26 @@ export default defineComponent({
         message: {
           owner: this.account,
           to: process.env.VUE_APP_RELAYER_ADDRESS,
-          value: new BigNumber(this.swapFrom.value)
-            .shiftedBy(this.swapFrom.decimals)
-            .toString(),
+          value: new BigNumber(this.swapFrom.value).shiftedBy(this.swapFrom.decimals),
           deadline,
           nonce: nonce,
         },
         primaryType: "Transfer",
-        types: signTypes,
+        types: {
+          EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
+            { name: "chainId", type: "uint256" },
+            { name: "verifyingContract", type: "address" },
+          ],
+          Transfer: [
+            { name: "owner", type: "address" },
+            { name: "to", type: "address" },
+            { name: "value", type: "uint256" },
+            { name: "nonce", type: "uint256" },
+            { name: "deadline", type: "uint256" },
+          ],
+        },
       };
 
       return messageData;
@@ -362,7 +372,7 @@ export default defineComponent({
         amount: new BigNumber(this.swapFrom.value)
           .shiftedBy(this.swapFrom.decimals)
           .toString(),
-        chainId: process.env.VUE_APP_CHAIN_ID,
+        chainId: Number(process.env.VUE_APP_CHAIN_ID),
         deadline,
       };
     },
