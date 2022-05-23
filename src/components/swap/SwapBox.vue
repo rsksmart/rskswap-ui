@@ -190,7 +190,11 @@ export default defineComponent({
       this.showMaxTooltip = !this.showMaxTooltip;
     },
     selectAddressType(type) {
-      this.typeDestinationAddress = type
+      this.typeDestinationAddress = type;
+
+      if (type === 'connected') {
+        this.destinationAccount = '';
+      }
     },
   },
 });
@@ -322,7 +326,10 @@ export default defineComponent({
   }
 }
 .differentDisabled {
-    background-color: lightgray;
+    color: #fff;
+    background-color: #e5e5e5 !important;
+    border-color: #e5e5e5;
+    pointer-events: none;
 }
 .tooltip-balance {
   background-color: black;
