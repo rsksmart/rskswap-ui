@@ -114,6 +114,7 @@ import BigNumber from "bignumber.js";
 import moment from "moment";
 
 import ERC20_ABI from "@/constants/abis/erc20.json";
+
 import { signTypes } from "@/constants/message";
 
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
@@ -247,8 +248,12 @@ export default defineComponent({
       }
 
       const estimatedGasFee = await estimatedGasResponse.json();
-      const deadline = Number(moment().add(3, "hours").unix());
+      let fee = new BigNumber(estimatedGasFee.amount);
+      // estimation of gas gives unnacurate, so we add up on top of the received value.
+      fee = fee.plus(100000);
+      estimatedGasFee.amount = fee.toString();
 
+      const deadline = Number(moment().add(3, "hours").unix());
       const signedData = await this.signWithMetamask(deadline); // needs to match what is in contract
 
       if (!signedData) {
@@ -259,7 +264,6 @@ export default defineComponent({
 
       try {
         const response = await fetch(
-          // 0xCa1D8715989D70173DdaE7e7b2111f49dE88d1c4
           `${process.env.VUE_APP_RELAYER_ENDPOINT}/swap`,
           {
             method: "POST",
@@ -273,7 +277,7 @@ export default defineComponent({
               r: signedData.r,
               s: signedData.s,
               estimatedGasFee,
-              sideTokenBtcContractAddress: this.swapFrom.address,
+              sideTokenBtcContract: this.swapFrom.address,
             }),
           }
         );
@@ -293,11 +297,12 @@ export default defineComponent({
           ERC20_ABI,
           this.swapFrom.address
         );
-        const nonce = await CONTRACT.methods.nonces(this.account).call();
 
+        const nonce = await CONTRACT.methods.nonces(this.account).call();
+        const tokenName = await CONTRACT.methods.name().call();
         return this.signMessage([
           this.account,
-          JSON.stringify(this.parseMessageToSign(nonce, deadline)),
+          JSON.stringify(this.parseMessageToSign(nonce, deadline, tokenName)),
         ]);
       } catch (err) {
         console.error("couldnt sign message", err);
@@ -327,24 +332,28 @@ export default defineComponent({
         );
       });
     },
-    parseMessageToSign(nonce, deadline) {
-      return {
+    parseMessageToSign(nonce, deadline, tokenName) {
+      const messageData = {
         domain: {
-          name: "RSK Relayer",
+          name: tokenName,
           version: "1",
           chainId: Number(process.env.VUE_APP_CHAIN_ID),
           verifyingContract: this.swapFrom.address,
         },
         message: {
           owner: this.account,
-          to: this.transferAddress,
-          value: Number(this.swapFrom.value),
-          deadline, // this.deadline
-          nonce: Number(nonce),
+          to: process.env.VUE_APP_RELAYER_ADDRESS,
+          value: new BigNumber(this.swapFrom.value)
+            .shiftedBy(this.swapFrom.decimals)
+            .toString(),
+          deadline,
+          nonce: nonce,
         },
         primaryType: "Transfer",
         types: signTypes,
       };
+
+      return messageData;
     },
     parseSwapData(deadline) {
       return {
