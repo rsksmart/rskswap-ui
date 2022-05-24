@@ -198,7 +198,7 @@ export default defineComponent({
       return this.walletConnected ? "12px" : "14px";
     },
     transferAddress() {
-      return this.destinationAccount || this.account;
+      return this.destinationAccount !== '' ? this.destinationAccount : this.account;
     },
   },
   methods: {
