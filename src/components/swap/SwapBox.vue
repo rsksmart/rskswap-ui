@@ -8,7 +8,12 @@
           <span class="text-left ml-4">swap</span>
           <div class="currency-input">
             <div class="input-holder">
-              <input placeholder="0.0" v-model="swapFrom.value" />
+              <input
+                placeholder="0.0"
+                v-model="swapFrom.value"
+                @change="handleSwapInput"
+                type="number"
+              />
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
               >
@@ -117,6 +122,7 @@ import ERC20_ABI from "@/constants/abis/erc20.json";
 
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
+import { convertWeiGasFee } from "@/utils/transactions";
 
 const { mapState } = createNamespacedHelpers("session");
 
@@ -207,6 +213,54 @@ export default defineComponent({
     },
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
+    },
+    async getGasPriceInWei(estimatedGas) {
+      const gasPrice = await this.web3.eth.getGasPrice();
+
+      return new BigNumber(estimatedGas)
+        .multipliedBy(gasPrice)
+        .shiftedBy(-10)
+        .toPrecision(8)
+        .toString();
+    },
+    async getEstimatedGasFee() {
+      const res = await fetch(
+        `${process.env.VUE_APP_RELAYER_ENDPOINT}/estimated-gas`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount: new BigNumber(this.swapFrom.value)
+              .shiftedBy(this.swapFrom.decimals)
+              .toString(),
+            unitType: "wei",
+          }),
+        }
+      );
+
+      if (!res.ok)
+        throw new Error("Error processing estimated-gas request, please retry");
+
+      return res.json();
+    },
+    async handleSwapInput() {
+      try {
+        const est = await this.getEstimatedGasFee();
+        const estimatedGas = new BigNumber(est.amount)
+          .plus(100000) // estimation of gas gives unnacurate, so we add up on top of the received value.
+          .shiftedBy(-8)
+          .toString();
+
+        const gasPrice = await this.getGasPriceInWei(estimatedGas);
+
+        this.swapTo.value = new BigNumber(this.swapFrom.value)
+          .minus(gasPrice)
+          .toString();
+      } catch (err) {
+        console.error("[handleSwapInput] ERROR: ", err);
+      }
     },
     async onSwap() {
       if (!this.swapFrom.value) {
