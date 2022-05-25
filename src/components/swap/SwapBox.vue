@@ -218,7 +218,7 @@ export default defineComponent({
     async validateDestinationAddress() {
       let disabled = true;
       try {
-        const code = await this.web3.eth.getCode(address)
+        const code = await this.web3.eth.getCode(this.destinationAccount)
         if (code !== '0x') {
           disabled = true
         } else {
