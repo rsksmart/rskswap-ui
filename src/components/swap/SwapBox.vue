@@ -164,6 +164,7 @@ export default defineComponent({
             this.destinationAccountValid = false
           }
         } catch (err) {
+          console.log('Invalid Address');
         }
       } else {
         this.destinationAccountValid = false;
