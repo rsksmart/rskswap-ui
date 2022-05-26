@@ -154,6 +154,21 @@ export default defineComponent({
         }
       }
     },
+    async destinationAccount(value) {
+      if (value !== '') {
+        try {
+          const code = await this.web3.eth.getCode(this.destinationAccount);
+          if (code === '0x' || code === '0x0') {
+            this.destinationAccountValid = true
+          } else {
+            this.destinationAccountValid = false
+          }
+        } catch (err) {
+        }
+      } else {
+        this.destinationAccountValid = false;
+      }
+    },
   },
   data() {
     return {
@@ -168,6 +183,7 @@ export default defineComponent({
         value: "",
       },
       destinationAccount: "",
+      destinationAccountValid: false,
       showMaxTooltip: false,
       typeDestinationAddress: 'connected',
     };
@@ -196,7 +212,7 @@ export default defineComponent({
       if (this.walletConnected) {
         if(this.typeDestinationAddress === 'connected' && this.account) {
           disabled = false;
-        } else if (this.typeDestinationAddress === 'different' && !this.validateDestinationAddress) {
+        } else if (this.typeDestinationAddress === 'different' && this.destinationAccountValid) {
           disabled = false;
         }
       }
@@ -215,22 +231,6 @@ export default defineComponent({
     },
   },
   methods: {
-    async validateDestinationAddress() {
-      let disabled = true;
-      try {
-        const code = await this.web3.eth.getCode(this.destinationAccount)
-        if (code !== '0x') {
-          disabled = true
-        } else {
-          disabled = false
-        }
-      } catch (err) {
-        console.error(err)
-      }
-      
-      console.log('Disabled', disabled);
-      return disabled;
-    },
     getTokenByAddress(address) {
       return this.allTokens.find((token) => token.address === address);
     },
@@ -575,7 +575,9 @@ export default defineComponent({
   justify-content : center;
 }
 .boxDisabled {
-  background-color: lightgray;
+  background-color: #e5e5e5;
+  opacity: .65;
+  border: none;
 }
 .input {
   white-space: nowrap;
