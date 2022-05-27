@@ -53,31 +53,30 @@
           <div class="container-fluid box-button">
             <div class="row gx-4">
               <div class="col-md-6 col-sm-12 mb-3">
-                <button
-                  :class="paddingConnectedAddress"
-                  :disabled="!walletConnected && swapFrom.address"
-                >
-                  <span :class="fontSizeConnectedAddress"
-                    >connected address</span
-                  >
+                <div 
+                  class="addressBox"
+                  :class="handleConnectedDisabled"
+                  :disabled="!walletConnected || typeDestinationAddress !== 'connected'"
+                  @click="selectAddressType('connected', $event)">
+                  <div>connected address</div>
                   <br />
                   <div v-if="walletConnected" class="text">
-                    <span>{{ account }}</span>
+                  <i v-if="walletConnected && typeDestinationAddress === 'connected'" class="fa fa-check"></i>
+                    {{ account }}
                   </div>
-                </button>
+                </div>
               </div>
               <div class="col-md-6 col-sm-12 mb-3">
                 <div
-                  id="diferentAddress"
-                  class="rounded p-3"
-                  :disabled="!walletConnected"
-                  @click="onSubmit"
-                >
+                  class="addressBox" 
+                  :class="handleDifferentDisabled"
+                  @click="selectAddressType('different', $event)">
                   <span v-if="!walletConnected"> different address </span>
                   <div
                     v-else
                     class="d-flex w-100 justify-content-center align-items-center"
                   >
+                    <i v-if="walletConnected && typeDestinationAddress === 'different'" class="fa fa-check"></i>
                     <input
                       type="text"
                       class="input"
@@ -93,7 +92,7 @@
               <div class="col-md-12 justify-content-center">
                 <button
                   class="btn btn-primary py-3 rounded w-50"
-                  :disabled="!walletConnected"
+                  :disabled="handleSwapDisabled"
                   @click="onSwap"
                 >
                   swap tokens
@@ -155,6 +154,22 @@ export default defineComponent({
         }
       }
     },
+    async destinationAccount(value) {
+      if (value !== '') {
+        try {
+          const code = await this.web3.eth.getCode(this.destinationAccount);
+          if (code === '0x' || code === '0x0') {
+            this.destinationAccountValid = true
+          } else {
+            this.destinationAccountValid = false
+          }
+        } catch (err) {
+          console.log('Invalid Address');
+        }
+      } else {
+        this.destinationAccountValid = false;
+      }
+    },
   },
   data() {
     return {
@@ -169,7 +184,9 @@ export default defineComponent({
         value: "",
       },
       destinationAccount: "",
+      destinationAccountValid: false,
       showMaxTooltip: false,
+      typeDestinationAddress: 'connected',
     };
   },
   computed: {
@@ -183,16 +200,35 @@ export default defineComponent({
     walletConnected() {
       return this.enabled;
     },
-    paddingConnectedAddress() {
-      return `btn btn-primary ${
-        this.walletConnected ? "py-2" : "py-3"
-      } rounded w-100`;
+    handleConnectedDisabled() {
+      if (!this.walletConnected || this.typeDestinationAddress !== 'connected') {
+        return 'boxDisabled'
+      }
+
+      return '';
     },
-    fontSizeConnectedAddress() {
-      return this.walletConnected ? "12px" : "14px";
+    handleSwapDisabled() {
+      let disabled = true;
+
+      if (this.walletConnected) {
+        if(this.typeDestinationAddress === 'connected' && this.account) {
+          disabled = false;
+        } else if (this.typeDestinationAddress === 'different' && this.destinationAccountValid) {
+          disabled = false;
+        }
+      }
+
+      return disabled;
+    },
+    handleDifferentDisabled() {
+      if (!this.walletConnected || this.typeDestinationAddress !== 'different') {
+        return 'boxDisabled'
+      }
+
+      return '';
     },
     transferAddress() {
-      return this.destinationAccount || this.account;
+      return this.destinationAccount !== '' ? this.destinationAccount : this.account;
     },
   },
   methods: {
@@ -207,6 +243,13 @@ export default defineComponent({
     },
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
+    },
+    selectAddressType(type) {
+      this.typeDestinationAddress = type;
+
+      if (type === 'connected') {
+        this.destinationAccount = '';
+      }
     },
     async onSwap() {
       if (!this.swapFrom.value) {
@@ -471,8 +514,8 @@ export default defineComponent({
 
 .text {
   font-size: 12px;
-  white-space: nowrap;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 
@@ -482,33 +525,6 @@ export default defineComponent({
   color: $lightGray;
   margin-bottom: 1.5rem !important;
   margin-top: calc(1.5rem + 25px) !important;
-}
-
-#diferentAddress {
-  background-color: $gray;
-  color: white;
-  font-size: 14px;
-  .input {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    background-color: transparent;
-    color: white;
-    border: none;
-    &::placeholder {
-      color: white !important;
-      font-size: 14px;
-      text-transform: lowercase !important;
-    }
-
-    &:disabled {
-      background-color: $lightGray;
-    }
-  }
-  .clipboard-icon {
-    cursor: pointer;
-    width: 14px;
-  }
 }
 .tooltip-balance {
   background-color: black;
@@ -544,5 +560,44 @@ export default defineComponent({
   span {
     white-space: nowrap;
   }
+}
+.addressBox {
+  color: #000;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px;
+  background-color: #e1fce4;
+  border: 1px solid #22de22;
+  border-radius: 10px;
+  height: 60px;
+  display : flex;
+  flex-wrap: wrap;
+  align-items : center;
+  justify-content : center;
+}
+.boxDisabled {
+  background-color: #e5e5e5;
+  opacity: .65;
+  border: none;
+}
+.input {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background-color: transparent;
+  color: #000;
+  border: none;
+  &::placeholder {
+    color: #000 !important;
+    font-size: 14px;
+    text-transform: lowercase !important;
+  }
+}
+.clipboard-icon {
+  cursor: pointer;
+  width: 14px;
+}
+.fa-check {
+  color: #69ed6f;
 }
 </style>
