@@ -214,13 +214,13 @@ export default defineComponent({
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
     },
-    async getGasPriceInWei(estimatedGas) {
+    async getGasCostInWei(estimatedGas) {
       const gasPrice = await this.web3.eth.getGasPrice();
 
       return new BigNumber(estimatedGas)
         .multipliedBy(gasPrice)
-        .shiftedBy(-10)
-        .toPrecision(8)
+        .shiftedBy(-18)
+        .toPrecision(6)
         .toString();
     },
     async getEstimatedGasFee() {
@@ -247,16 +247,17 @@ export default defineComponent({
     },
     async handleSwapInput() {
       try {
-        const est = await this.getEstimatedGasFee();
-        const estimatedGas = new BigNumber(est.amount)
-          .plus(100000) // estimation of gas gives unnacurate, so we add up on top of the received value.
-          .shiftedBy(-8)
+        const estimatedGasFee = await this.getEstimatedGasFee();
+        const estimatedGas = new BigNumber(estimatedGasFee.amount)
+          .plus(100_000) // estimation of gas gives unnacurate, so we add up on top of the received value.
           .toString();
+        console.log("estimated gas:", estimatedGas);
+        // const costInWei = await this.getGasCostInWei(estimatedGas);
 
-        const gasPrice = await this.getGasPriceInWei(estimatedGas);
-
+        // console.log("cost in wei:", costInWei);
+        const gasInWei = new BigNumber(estimatedGas).shiftedBy(-18).toString();
         this.swapTo.value = new BigNumber(this.swapFrom.value)
-          .minus(gasPrice)
+          .minus(gasInWei)
           .toString();
       } catch (err) {
         console.error("[handleSwapInput] ERROR: ", err);
