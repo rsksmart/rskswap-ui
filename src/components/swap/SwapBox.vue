@@ -132,6 +132,7 @@ import ERC20_ABI from "@/constants/abis/erc20.json";
 
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
+import { ApiError } from "@/types/error";
 
 const { mapState } = createNamespacedHelpers("session");
 
@@ -290,22 +291,26 @@ export default defineComponent({
       }
 
       this.showSpinner = true;
-
-      const estimatedGasResponse = await fetch(
-        `${process.env.VUE_APP_RELAYER_ENDPOINT}/estimated-gas`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: new BigNumber(this.swapFrom.value)
-              .shiftedBy(this.swapFrom.decimals)
-              .toString(),
-            unitType: "wei",
-          }),
-        }
-      );
+      let estimatedGasResponse;
+      try {
+        estimatedGasResponse = await fetch(
+          `${process.env.VUE_APP_RELAYER_ENDPOINT}/estimated-gas`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              amount: new BigNumber(this.swapFrom.value)
+                .shiftedBy(this.swapFrom.decimals)
+                .toString(),
+              unitType: "wei",
+            }),
+          }
+        );
+      } catch (error) {
+        throw new ApiError(error.message);
+      }
 
       if (!estimatedGasResponse.ok) {
         console.error(
@@ -355,6 +360,7 @@ export default defineComponent({
         console.log("swap receipt", receipt);
       } catch (err) {
         console.error("couldnt swap", err);
+        throw new ApiError(err.message);
       } finally {
         this.showSpinner = false;
       }
