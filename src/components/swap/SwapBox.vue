@@ -122,7 +122,6 @@ import ERC20_ABI from "@/constants/abis/erc20.json";
 
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
-import { convertWeiGasFee } from "@/utils/transactions";
 
 const { mapState } = createNamespacedHelpers("session");
 
