@@ -32,4 +32,5 @@ export interface SessionState {
   rLoginInstance?: RLogin;
   currentChain?: ChainConfig;
   network: NetworkConfig;
+  showSpinner: boolean;
 }

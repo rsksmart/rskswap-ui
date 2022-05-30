@@ -21,10 +21,10 @@ export function transactionCallback({ resolve, reject, web3, explorer }) {
         const stringReceipt = JSON.stringify(receipt, null, 2);
         return reject(
           new Error(
-            `Transaction status failed ${textExplorerLink}
-                <p class="d-none">
+            `Transaction status failed
+                <p>
                   <small>Transaction Info</small>
-                  <pre class="overflow-auto d-none" style="max-height: 200px">${stringReceipt}</pre>
+                  <pre class="overflow-auto" style="max-height: 200px">${stringReceipt}</pre>
                 </p>
               `
           )

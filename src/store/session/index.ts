@@ -11,6 +11,7 @@ export const state: SessionState = {
   web3: undefined,
   enabled: false,
   rLogin: undefined,
+  showSpinner: false,
   rLoginInstance: undefined,
   network: RSK_CONFIG,
 };
