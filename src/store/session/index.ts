@@ -14,6 +14,7 @@ export const state: SessionState = {
   showSpinner: false,
   rLoginInstance: undefined,
   network: RSK_CONFIG,
+  message: {},
 };
 
 const namespaced = true;

@@ -18,15 +18,10 @@ export function transactionCallback({ resolve, reject, web3, explorer }) {
       if (receipt.status) {
         return resolve(receipt);
       } else {
-        const stringReceipt = JSON.stringify(receipt, null, 2);
+        const url = `${process.env.VUE_APP_EXPLORER_ADDRESS}/tx/${txHash}`;
         return reject(
           new Error(
-            `Transaction status failed
-                <p>
-                  <small>Transaction Info</small>
-                  <pre class="overflow-auto" style="max-height: 200px">${stringReceipt}</pre>
-                </p>
-              `
+            `<span>Error: Transaction Info <a class="error-message" href="${url}">${url}</a></span>`
           )
         );
       }

@@ -26,6 +26,9 @@ export const mutations: MutationTree<SessionState> = {
   [constants.SESSION_SET_SPINNER]: (state, showSpinner) => {
     state.showSpinner = showSpinner;
   },
+  [constants.SESSION_SET_MESSAGE]: (state, message) => {
+    state.message = message;
+  },
   [constants.SESSION_SET_CURRENT_CHAIN]: (state, chainId: number) => {
     state.currentChain = {
       id: chainId,

@@ -133,7 +133,6 @@ import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 import { transactionCallback } from "@/utils/transactions";
 import { txExplorerLink } from "@/utils/address-helpers";
-import { MessageError } from "@/types/error";
 import * as constants from "@/store/constants";
 
 const { mapState, mapActions } = createNamespacedHelpers("session");
@@ -285,12 +284,27 @@ export default defineComponent({
       }
     },
     async onSwap() {
-      if (!this.swapFrom.value) {
+      console.log(this.swapFrom);
+      if (!this.swapFrom.value || this.swapFrom.value <= 0) {
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: `You need to estimate a swap amount!`,
+            type: "danger",
+          },
+        });
         console.error("You need to estimate a swap amount!");
         return;
       }
 
       if (!this.swapFrom.decimals) {
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: "Origin token has no decimals defined!",
+            type: "danger",
+          },
+        });
         console.error("Origin token has no decimals defined!");
         return;
       }
@@ -314,6 +328,13 @@ export default defineComponent({
       );
 
       if (!estimatedGasResponse.ok) {
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: `Couldnt estimate gas fee, error: ${estimatedGasResponse.error}`,
+            type: "danger",
+          },
+        });
         console.error(
           "Couldnt estimate gas fee, error: ",
           estimatedGasResponse.error
@@ -331,7 +352,13 @@ export default defineComponent({
       const signedData = await this.signWithMetamask(deadline); // needs to match what is in contract
 
       if (!signedData) {
-        // todo: display error
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: `no signed data!`,
+            type: "danger",
+          },
+        });
         console.error("no signed data!");
         return null;
       }
@@ -372,9 +399,22 @@ export default defineComponent({
         );
 
         console.log("swap receipt", receipt);
+
+        this.SEND_NOTIFICATION({
+          message: {
+            data: "swap receipt",
+            type: "success",
+          },
+        });
       } catch (err) {
         console.error("couldnt swap", err);
-        throw new MessageError(err);
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: err.message,
+            type: "danger",
+          },
+        });
       } finally {
         this.STOP_SPINNER();
       }
@@ -468,7 +508,11 @@ export default defineComponent({
         deadline,
       };
     },
-    ...mapActions([constants.START_SPINNER, constants.STOP_SPINNER]),
+    ...mapActions([
+      constants.START_SPINNER,
+      constants.STOP_SPINNER,
+      constants.SEND_NOTIFICATION,
+    ]),
   },
 });
 </script>

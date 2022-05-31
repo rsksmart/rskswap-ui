@@ -72,6 +72,9 @@ export const actions: ActionTree<SessionState, RootState> = {
   [constants.STOP_SPINNER]: async ({ commit }) => {
     commit(constants.SESSION_SET_SPINNER, false);
   },
+  [constants.SEND_NOTIFICATION]: async ({ commit }, { message }) => {
+    commit(constants.SESSION_SET_MESSAGE, message);
+  },
   [constants.WEB3_APPROVE_TOKEN]: async (
     { commit, state },
     { tokenAddress, accountAddress, network }
