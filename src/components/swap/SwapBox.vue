@@ -8,7 +8,12 @@
           <span class="text-left ml-4">swap</span>
           <div class="currency-input">
             <div class="input-holder">
-              <input placeholder="0.0" v-model="swapFrom.value" />
+              <input
+                placeholder="0.0"
+                v-model="swapFrom.value"
+                @change="handleSwapInput"
+                type="number"
+              />
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
               >
@@ -134,6 +139,7 @@ import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 import { transactionCallback } from "@/utils/transactions";
 import { txExplorerLink } from "@/utils/address-helpers";
 import * as constants from "@/store/constants";
+import { GAS_AVG } from "@/utils/transactions";
 
 const { mapState, mapActions } = createNamespacedHelpers("session");
 
@@ -276,6 +282,25 @@ export default defineComponent({
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
     },
+    async getGasCostWithDecimals(estimatedGas) {
+      const gasPrice = await this.web3.eth.getGasPrice();
+
+      return new BigNumber(estimatedGas)
+        .multipliedBy(gasPrice)
+        .shiftedBy(-18)
+        .toPrecision(18)
+        .toString();
+    },
+    async handleSwapInput() {
+      try {
+        const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
+        this.swapTo.value = new BigNumber(this.swapFrom.value)
+          .minus(gasCost)
+          .toString();
+      } catch (err) {
+        console.error("[handleSwapInput] ERROR: ", err);
+      }
+    },
     selectAddressType(type) {
       this.typeDestinationAddress = type;
 
@@ -311,44 +336,12 @@ export default defineComponent({
 
       this.START_SPINNER();
 
-      const estimatedGasResponse = await fetch(
-        `${process.env.VUE_APP_RELAYER_ENDPOINT}/estimated-gas`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: new BigNumber(this.swapFrom.value)
-              .shiftedBy(this.swapFrom.decimals)
-              .toString(),
-            unitType: "wei",
-          }),
-        }
-      );
+      const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
+      const gasFeeInWei = new BigNumber(gasCost).shiftedBy(18).toString();
 
-      if (!estimatedGasResponse.ok) {
-        this.SEND_NOTIFICATION({
-          message: {
-            message: "Error Message",
-            data: `Couldnt estimate gas fee, error: ${estimatedGasResponse.error}`,
-            type: "danger",
-          },
-        });
-        console.error(
-          "Couldnt estimate gas fee, error: ",
-          estimatedGasResponse.error
-        );
-        return;
-      }
+      const estimatedGasFee = { amount: gasFeeInWei, unitType: "wei" };
 
-      const estimatedGasFee = await estimatedGasResponse.json();
-      let fee = new BigNumber(estimatedGasFee.amount);
-      // estimation of gas gives unnacurate, so we add up on top of the received value.
-      fee = fee.plus(100000);
-      estimatedGasFee.amount = fee.toString();
-
-      const deadline = Number(moment().add(3, "hours").unix());
+      const deadline = Number(moment().add(12, "hours").unix());
       const signedData = await this.signWithMetamask(deadline); // needs to match what is in contract
 
       if (!signedData) {
