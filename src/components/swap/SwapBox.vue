@@ -170,7 +170,7 @@ export default defineComponent({
             this.destinationAccountValid = false
           }
         } catch (err) {
-          console.log('Invalid Address');
+          this.destinationAccountValid = false
         }
       } else {
         this.destinationAccountValid = false;
