@@ -142,7 +142,6 @@ export default defineComponent({
       if (model) {
         this.hasAllowance = false;
         let balance;
-        await this.getMaximumAllowed();
         if (model.type === "NATIVE") {
           if (!model.decimals) {
             console.error("decimals not defined for model ", model.token);
@@ -160,6 +159,7 @@ export default defineComponent({
           balance = await tokenInst.methods.balanceOf(this.account).call();
           this.swapFrom.balance = this.web3.utils.fromWei(balance);
         }
+        await this.getMaximumAllowed();
       }
     },
     async destinationAccount(value) {
@@ -247,7 +247,7 @@ export default defineComponent({
       this.destinationAccount = await navigator.clipboard.readText();
     },
     assignMaxValueToSwapValue() {
-      this.swapFrom.value = this.swapFrom.balance;
+      this.swapFrom.value = this.maximumAllowed;
     },
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
@@ -429,17 +429,13 @@ export default defineComponent({
     async getMaximumAllowed() {
       let relayerBalance = await this.web3.eth.getBalance(process.env.VUE_APP_RELAYER_ADDRESS);
       relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RKOVWBTC_TOKEN.decimals).toString());
-      const maxSwap = 0.1;
-      let userBalance = await this.web3.eth.getBalance(this.account);
-      userBalance = +(new BigNumber(userBalance).shiftedBy(-18).toString());
+      const maxSwap = 30;
+      let userBalance = this.swapFrom.balance;
+      userBalance = 5
+      relayerBalance = 7;
 
-      if (maxSwap > userBalance && relayerBalance > maxSwap) {
-        this.maximumAllowed = relayerBalance;
-      } else if (userBalance > relayerBalance && userBalance > maxSwap) {
-        this.maximumAllowed = userBalance;
-      } else {
-        this.maximumAllowed =  maxSwap;
-      }
+      Math.min(userBalance, relayerBalance) > maxSwap ? this.maximumAllowed = maxSwap :
+        userBalance > relayerBalance ? this.maximumAllowed = relayerBalance : this.maximumAllowed = userBalance
     },
   },
 });
