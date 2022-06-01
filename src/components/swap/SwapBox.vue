@@ -173,7 +173,7 @@ export default defineComponent({
             this.destinationAccountValid = false
           }
         } catch (err) {
-          this.destinationAccountValid = false;
+          this.destinationAccountValid = false
         }
       }
     },
