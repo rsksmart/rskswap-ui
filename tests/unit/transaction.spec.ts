@@ -34,6 +34,8 @@ describe("transaction.ts", () => {
     jest.spyOn(helper, "txExplorerLink").mockReturnValue("http://test.com");
     jest.spyOn(utils, "waitForReceipt").mockResolvedValue({ status: false });
 
+    process.env.VUE_APP_EXPLORER_ADDRESS = "https://explorer.testnet.rsk.co";
+
     try {
       await new Promise((resolve, reject) =>
         transactionCallback({ reject, resolve, web3: null, explorer: null })(
