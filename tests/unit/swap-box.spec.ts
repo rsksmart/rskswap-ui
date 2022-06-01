@@ -11,8 +11,8 @@ const store = createStore({
   },
 });
 
-describe("SwapBox.vue", () => {
-  it("box-body is rendered", () => {
+describe("SwapBox.vue", async () => {
+  it("box-body is rendered", async () => {
     const wrapper = shallowMount(SwapBox, {
       global: {
         plugins: [store],

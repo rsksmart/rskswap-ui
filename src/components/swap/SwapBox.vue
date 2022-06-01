@@ -25,9 +25,9 @@
                   @mouseleave="toggleshowMaxTooltip"
                 >
                   <div v-if="showMaxTooltip" class="tooltip-balance">
-                    <span> max: {{ this.swapFrom.balance }}</span>
+                    <span> max: {{ maximumAllowed }}</span>
                   </div>
-                  max: {{ this.swapFrom.balance }}
+                  max: {{ maximumAllowed }}
                 </span>
                 <SelectTokenModal v-model="swapFrom" :allowSelect="false" />
               </div>
@@ -120,6 +120,7 @@ import moment from "moment";
 import ERC20_ABI from "@/constants/abis/erc20.json";
 
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
+import { RKOVWBTC_TOKEN } from "@/constants/tokens/tokens";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 import { GAS_AVG } from "@/utils/transactions";
 
@@ -141,6 +142,7 @@ export default defineComponent({
       if (model) {
         this.hasAllowance = false;
         let balance;
+        await this.getMaximumAllowed();
         if (model.type === "NATIVE") {
           if (!model.decimals) {
             console.error("decimals not defined for model ", model.token);
@@ -161,6 +163,7 @@ export default defineComponent({
       }
     },
     async destinationAccount(value) {
+      this.destinationAccountValid = false;
       if (value !== '') {
         try {
           const code = await this.web3.eth.getCode(this.destinationAccount);
@@ -170,10 +173,8 @@ export default defineComponent({
             this.destinationAccountValid = false
           }
         } catch (err) {
-          console.log('Invalid Address');
+          this.destinationAccountValid = false;
         }
-      } else {
-        this.destinationAccountValid = false;
       }
     },
   },
@@ -193,6 +194,7 @@ export default defineComponent({
       destinationAccountValid: false,
       showMaxTooltip: false,
       typeDestinationAddress: 'connected',
+      maximumAllowed: 0,
     };
   },
   computed: {
@@ -279,6 +281,11 @@ export default defineComponent({
     async onSwap() {
       if (!this.swapFrom.value) {
         console.error("You need to estimate a swap amount!");
+        return;
+      }
+
+      if (this.swapFrom.value > this.maximumAllowed) {
+        console.error(`You cant swap a value greater than then ${this.maximumAllowed}!`);
         return;
       }
 
@@ -418,6 +425,21 @@ export default defineComponent({
         chainId: Number(process.env.VUE_APP_CHAIN_ID),
         deadline,
       };
+    },
+    async getMaximumAllowed() {
+      let relayerBalance = await this.web3.eth.getBalance(process.env.VUE_APP_RELAYER_ADDRESS);
+      relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RKOVWBTC_TOKEN.decimals).toString());
+      const maxSwap = 0.1;
+      let userBalance = await this.web3.eth.getBalance(this.account);
+      userBalance = +(new BigNumber(userBalance).shiftedBy(-18).toString());
+
+      if (maxSwap > userBalance && relayerBalance > maxSwap) {
+        this.maximumAllowed = relayerBalance;
+      } else if (userBalance > relayerBalance && userBalance > maxSwap) {
+        this.maximumAllowed = userBalance;
+      } else {
+        this.maximumAllowed =  maxSwap;
+      }
     },
   },
 });
