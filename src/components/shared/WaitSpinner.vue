@@ -5,7 +5,6 @@
     class="mt-3 align-center text-center"
     style="max-width: 350px; line-height: 16px"
   >
-    <!-- Spinner <div class="spinner-border mb-4" style="height:70px; width:70px"></div> -->
     <!-- https://tobiasahlin.com/spinkit/ -->
     <div class="sk-fading-circle">
       <div class="sk-circle1 sk-circle"></div>

@@ -179,21 +179,20 @@ export default defineComponent({
       }
     },
     async destinationAccount(value) {
-      if (value !== "") {
-        try {
-          const code = await this.web3.eth.getCode(this.destinationAccount);
-          if (code === "0x" || code === "0x0") {
-            this.destinationAccountValid = true;
-          } else {
-            this.destinationAccountValid = false;
-          }
-        } catch (err) {
-          console.log("Invalid Address");
-          this.destinationAccountValid = false;
-        }
-      } else {
+      let code;
+      const VALID_ACCOUNT_CODE = ["0x", "0x0"];
+
+      if (!value) {
         this.destinationAccountValid = false;
+        return;
       }
+
+      try {
+        code = await this.web3.eth.getCode(this.destinationAccount);
+      } catch (err) {
+        console.log("Invalid Address");
+      }
+      this.destinationAccountValid = VALID_ACCOUNT_CODE.includes(code);
     },
   },
   data() {
@@ -237,22 +236,26 @@ export default defineComponent({
       return "";
     },
     handleSwapDisabled() {
-      let disabled = true;
+      const WALLET_IS_NOT_CONNECTED = !this.walletConnected;
+      const IS_SPINNER_RUNNING = this.showSpinner;
+      const CONDITIONS_TO_ENABLE_BUTTON_SWAP = [
+        this.isConnectedAndAccountPresent,
+        this.isDestinationAddressDifferentAndDestinationAccountValid,
+      ].some((condition) => condition);
+      const IS_BUTTON_SWAP_DISABLED = !CONDITIONS_TO_ENABLE_BUTTON_SWAP;
 
-      if (this.walletConnected) {
-        if (this.typeDestinationAddress === "connected" && this.account) {
-          disabled = false;
-        } else if (
-          this.typeDestinationAddress === "different" &&
-          this.destinationAccountValid
-        ) {
-          disabled = false;
-        } else if (!this.showSpinner) {
-          disabled = false;
-        }
-      }
-
-      return disabled || this.showSpinner;
+      return (
+        WALLET_IS_NOT_CONNECTED || IS_SPINNER_RUNNING || IS_BUTTON_SWAP_DISABLED
+      );
+    },
+    isConnectedAndAccountPresent() {
+      return this.typeDestinationAddress === "connected" && this.account;
+    },
+    isDestinationAddressDifferentAndDestinationAccountValid() {
+      return (
+        this.typeDestinationAddress === "different" &&
+        this.destinationAccountValid
+      );
     },
     handleDifferentDisabled() {
       if (
@@ -314,11 +317,11 @@ export default defineComponent({
         this.SEND_NOTIFICATION({
           message: {
             message: "Error Message",
-            data: `You need to estimate a swap amount!`,
+            data: `Amount is required for the swap.`,
             type: "danger",
           },
         });
-        console.error("You need to estimate a swap amount!");
+        console.error("Amount is required for the swap.");
         return;
       }
 
@@ -372,7 +375,7 @@ export default defineComponent({
               s: signedData.s,
               estimatedGasFee,
               sideTokenBtcContract: this.swapFrom.address,
-              deadline: deadline.toString(),
+              deadline: deadline,
             }),
           }
         );
@@ -401,8 +404,6 @@ export default defineComponent({
             ),
           })(null, receipt.transactionHash)
         );
-
-        console.log("swap receipt", receipt);
 
         this.SEND_NOTIFICATION({
           message: {

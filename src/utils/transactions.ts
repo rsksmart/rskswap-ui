@@ -6,7 +6,10 @@ import Web3 from "web3";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 export function transactionCallback({ resolve, reject, web3, explorer }) {
-  return async (err: Record<string, unknown>, txHash: string) => {
+  return async (
+    err: Record<string, unknown> | undefined | null,
+    txHash: string
+  ) => {
     const textExplorerLink = txExplorerLink(txHash, explorer);
     if (err) {
       return reject(
@@ -21,7 +24,7 @@ export function transactionCallback({ resolve, reject, web3, explorer }) {
         const url = `${process.env.VUE_APP_EXPLORER_ADDRESS}/tx/${txHash}`;
         return reject(
           new Error(
-            `<span>Error: Transaction Info <a class="error-message" href="${url}">${url}</a></span>`
+            `<span>Error: Transaction Info <a class="error-message" href="${url}" target="_blank">${url}</a></span>`
           )
         );
       }
