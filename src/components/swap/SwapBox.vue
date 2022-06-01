@@ -189,6 +189,7 @@ export default defineComponent({
           }
         } catch (err) {
           console.log("Invalid Address");
+          this.destinationAccountValid = false;
         }
       } else {
         this.destinationAccountValid = false;
