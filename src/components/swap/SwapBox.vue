@@ -309,7 +309,6 @@ export default defineComponent({
       }
     },
     async onSwap() {
-      console.log(this.swapFrom);
       if (!this.swapFrom.value || this.swapFrom.value <= 0) {
         this.SEND_NOTIFICATION({
           message: {
@@ -378,6 +377,17 @@ export default defineComponent({
         );
 
         const receipt = await response.json();
+        if (response.status !== 201) {
+          console.error(receipt);
+          this.SEND_NOTIFICATION({
+            message: {
+              message: "Error Message",
+              data: receipt.response.error,
+              type: "danger",
+            },
+          });
+          return;
+        }
 
         await new Promise((resolve, reject) =>
           transactionCallback({
