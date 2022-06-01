@@ -30,21 +30,24 @@ describe("transaction.ts", () => {
     expect(promise).resolves.toMatchObject({ status: true });
   });
 
-  it("transaction callback should reject when waitForReceipt is return status error", () => {
+  it("transaction callback should reject when waitForReceipt is return status error", async () => {
     jest.spyOn(helper, "txExplorerLink").mockReturnValue("http://test.com");
     jest.spyOn(utils, "waitForReceipt").mockResolvedValue({ status: false });
 
-    const promise = new Promise((resolve, reject) =>
-      transactionCallback({ reject, resolve, web3: null, explorer: null })(
-        null,
-        "Ox1234556789ABDCEF"
-      )
-    );
-
-    expect(helper.txExplorerLink).toBeCalledTimes(1);
-    expect(utils.waitForReceipt).toBeCalledTimes(1);
-    expect(promise).rejects.toThrow(
-      '<span>Error: Transaction Info <a class="error-message" href="https://explorer.testnet.rsk.co/tx/Ox1234556789ABDCEF" target="_blank">https://explorer.testnet.rsk.co/tx/Ox1234556789ABDCEF</a></span>'
-    );
+    try {
+      await new Promise((resolve, reject) =>
+        transactionCallback({ reject, resolve, web3: null, explorer: null })(
+          null,
+          "Ox1234556789ABDCEF"
+        )
+      );
+      fail("it should not reach here");
+    } catch (error) {
+      expect(helper.txExplorerLink).toBeCalledTimes(1);
+      expect(utils.waitForReceipt).toBeCalledTimes(1);
+      expect((error as { message: string }).message).toBe(
+        '<span>Error: Transaction Info <a class="error-message" href="https://explorer.testnet.rsk.co/tx/Ox1234556789ABDCEF" target="_blank">https://explorer.testnet.rsk.co/tx/Ox1234556789ABDCEF</a></span>'
+      );
+    }
   });
 });
