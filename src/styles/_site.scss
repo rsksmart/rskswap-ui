@@ -260,3 +260,12 @@ table.table tr td {
 .navbar {
   position: inherit;
 }
+
+.error-message {
+  display: block; 
+  width: 80%; 
+  text-overflow: ellipsis; 
+  overflow: hidden; 
+  white-space: nowrap; 
+  margin: 0px auto;
+}

@@ -4,4 +4,6 @@ module.exports = {
   transform: {
     "^.+\\.vue$": "vue-jest",
   },
+  resetMocks: true,
+  restoreMocks: true,
 };

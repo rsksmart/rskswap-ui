@@ -8,16 +8,21 @@
       class="toast-container position-fixed justify-content-center align-items-center col-md-4 notification"
     >
       <div
-        class="bg-danger box-header"
+        :class="[`bg-${type}`, 'box-header']"
         tarnclass="toast"
         role="alert"
         aria-live="assertive"
         aria-atomic="true"
       >
         <div class="toast-header">
-          <strong class="ml-0">
+          <strong class="ml-0" v-if="type === 'success'">
+            <i class="fa fa-check" aria-hidden="true"></i>
+            Success
+          </strong>
+          <strong class="ml-0" v-else>
             <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-            {{ error.message }} [code: {{ error.code }}]
+            {{ message.message }}
+            {{ message.code ? `[code: ${message.code}]` : "" }}
           </strong>
           <button
             type="button"
@@ -27,9 +32,12 @@
             @click="close()"
           >
             <span aria-hidden="true">&times;</span>
-        </button>
+          </button>
         </div>
-        <div class="toast-body">{{ error.data }}</div>
+        <div v-if="isHtmlData" v-html="message.data"></div>
+        <div class="toast-body" v-else>
+          {{ message.data }}
+        </div>
       </div>
     </div>
   </transition>
@@ -39,8 +47,12 @@
 export default {
   name: "ErrorNotification",
   props: {
-    error: {
+    message: {
       type: Object,
+      required: false,
+    },
+    type: {
+      type: String,
       required: true,
     },
     delay: {
@@ -55,7 +67,7 @@ export default {
     };
   },
   watch: {
-    error() {
+    message() {
       this.show = true;
       clearTimeout(this.timeout);
       const displayTime = this.delay;
@@ -69,16 +81,24 @@ export default {
       this.show = false;
     },
   },
+  computed: {
+    isHtmlData() {
+      return this.message.data.includes("</");
+    },
+  },
 };
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
 .notification {
   position: fixed;
   top: 1vh;
   width: 50vw;
   left: 33.3vw;
+}
+
+.bg-success {
+  background-color: $success !important;
 }
 
 .box-header {

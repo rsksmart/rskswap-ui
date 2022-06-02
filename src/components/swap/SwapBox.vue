@@ -58,30 +58,46 @@
           <div class="container-fluid box-button">
             <div class="row gx-4">
               <div class="col-md-6 col-sm-12 mb-3">
-                <div 
+                <div
                   class="addressBox"
                   :class="handleConnectedDisabled"
-                  :disabled="!walletConnected || typeDestinationAddress !== 'connected'"
-                  @click="selectAddressType('connected', $event)">
+                  :disabled="
+                    !walletConnected || typeDestinationAddress !== 'connected'
+                  "
+                  @click="selectAddressType('connected', $event)"
+                >
                   <div>connected address</div>
                   <br />
                   <div v-if="walletConnected" class="text">
-                  <i v-if="walletConnected && typeDestinationAddress === 'connected'" class="fa fa-check"></i>
+                    <i
+                      v-if="
+                        walletConnected &&
+                        typeDestinationAddress === 'connected'
+                      "
+                      class="fa fa-check"
+                    ></i>
                     {{ account }}
                   </div>
                 </div>
               </div>
               <div class="col-md-6 col-sm-12 mb-3">
                 <div
-                  class="addressBox" 
+                  class="addressBox"
                   :class="handleDifferentDisabled"
-                  @click="selectAddressType('different', $event)">
+                  @click="selectAddressType('different', $event)"
+                >
                   <span v-if="!walletConnected"> different address </span>
                   <div
                     v-else
                     class="d-flex w-100 justify-content-center align-items-center"
                   >
-                    <i v-if="walletConnected && typeDestinationAddress === 'different'" class="fa fa-check"></i>
+                    <i
+                      v-if="
+                        walletConnected &&
+                        typeDestinationAddress === 'different'
+                      "
+                      class="fa fa-check"
+                    ></i>
                     <input
                       type="text"
                       class="input"
@@ -118,12 +134,14 @@ import BigNumber from "bignumber.js";
 import moment from "moment";
 
 import ERC20_ABI from "@/constants/abis/erc20.json";
-
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
+import { transactionCallback } from "@/utils/transactions";
+import { txExplorerLink } from "@/utils/address-helpers";
+import * as constants from "@/store/constants";
 import { GAS_AVG } from "@/utils/transactions";
 
-const { mapState } = createNamespacedHelpers("session");
+const { mapState, mapActions } = createNamespacedHelpers("session");
 
 export default defineComponent({
   name: "SwapBox",
@@ -161,20 +179,20 @@ export default defineComponent({
       }
     },
     async destinationAccount(value) {
-      if (value !== '') {
-        try {
-          const code = await this.web3.eth.getCode(this.destinationAccount);
-          if (code === '0x' || code === '0x0') {
-            this.destinationAccountValid = true
-          } else {
-            this.destinationAccountValid = false
-          }
-        } catch (err) {
-          this.destinationAccountValid = false
-        }
-      } else {
+      let code;
+      const VALID_ACCOUNT_CODE = ["0x", "0x0"];
+
+      if (!value) {
         this.destinationAccountValid = false;
+        return;
       }
+
+      try {
+        code = await this.web3.eth.getCode(this.destinationAccount);
+      } catch (err) {
+        console.log("Invalid Address");
+      }
+      this.destinationAccountValid = VALID_ACCOUNT_CODE.includes(code);
     },
   },
   data() {
@@ -192,7 +210,7 @@ export default defineComponent({
       destinationAccount: "",
       destinationAccountValid: false,
       showMaxTooltip: false,
-      typeDestinationAddress: 'connected',
+      typeDestinationAddress: "connected",
     };
   },
   computed: {
@@ -202,39 +220,57 @@ export default defineComponent({
       network: (state) => state.network,
       web3: (state) => state.web3,
       allTokens: (state) => state.allTokens,
+      showSpinner: (state) => state.showSpinner,
     }),
     walletConnected() {
       return this.enabled;
     },
     handleConnectedDisabled() {
-      if (!this.walletConnected || this.typeDestinationAddress !== 'connected') {
-        return 'boxDisabled'
+      if (
+        !this.walletConnected ||
+        this.typeDestinationAddress !== "connected"
+      ) {
+        return "boxDisabled";
       }
 
-      return '';
+      return "";
     },
     handleSwapDisabled() {
-      let disabled = true;
+      const WALLET_IS_NOT_CONNECTED = !this.walletConnected;
+      const IS_SPINNER_RUNNING = this.showSpinner;
+      const CONDITIONS_TO_ENABLE_BUTTON_SWAP = [
+        this.isConnectedAndAccountPresent,
+        this.isDestinationAddressDifferentAndDestinationAccountValid,
+      ].some((condition) => condition);
+      const IS_BUTTON_SWAP_DISABLED = !CONDITIONS_TO_ENABLE_BUTTON_SWAP;
 
-      if (this.walletConnected) {
-        if(this.typeDestinationAddress === 'connected' && this.account) {
-          disabled = false;
-        } else if (this.typeDestinationAddress === 'different' && this.destinationAccountValid) {
-          disabled = false;
-        }
-      }
-
-      return disabled;
+      return (
+        WALLET_IS_NOT_CONNECTED || IS_SPINNER_RUNNING || IS_BUTTON_SWAP_DISABLED
+      );
+    },
+    isConnectedAndAccountPresent() {
+      return this.typeDestinationAddress === "connected" && this.account;
+    },
+    isDestinationAddressDifferentAndDestinationAccountValid() {
+      return (
+        this.typeDestinationAddress === "different" &&
+        this.destinationAccountValid
+      );
     },
     handleDifferentDisabled() {
-      if (!this.walletConnected || this.typeDestinationAddress !== 'different') {
-        return 'boxDisabled'
+      if (
+        !this.walletConnected ||
+        this.typeDestinationAddress !== "different"
+      ) {
+        return "boxDisabled";
       }
 
-      return '';
+      return "";
     },
     transferAddress() {
-      return this.destinationAccount !== '' ? this.destinationAccount : this.account;
+      return this.destinationAccount !== ""
+        ? this.destinationAccount
+        : this.account;
     },
   },
   methods: {
@@ -272,22 +308,36 @@ export default defineComponent({
     selectAddressType(type) {
       this.typeDestinationAddress = type;
 
-      if (type === 'connected') {
-        this.destinationAccount = '';
+      if (type === "connected") {
+        this.destinationAccount = "";
       }
     },
     async onSwap() {
-      if (!this.swapFrom.value) {
-        console.error("You need to estimate a swap amount!");
+      if (!this.swapFrom.value || this.swapFrom.value <= 0) {
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: `Amount is required for the swap.`,
+            type: "danger",
+          },
+        });
+        console.error("Amount is required for the swap.");
         return;
       }
 
       if (!this.swapFrom.decimals) {
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: "Origin token has no decimals defined!",
+            type: "danger",
+          },
+        });
         console.error("Origin token has no decimals defined!");
         return;
       }
 
-      this.showSpinner = true;
+      this.START_SPINNER();
 
       const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
       const gasFeeInWei = new BigNumber(gasCost).shiftedBy(18).toString();
@@ -298,7 +348,13 @@ export default defineComponent({
       const signedData = await this.signWithMetamask(deadline); // needs to match what is in contract
 
       if (!signedData) {
-        // todo: display error
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: `no signed data!`,
+            type: "danger",
+          },
+        });
         console.error("no signed data!");
         return null;
       }
@@ -319,17 +375,53 @@ export default defineComponent({
               s: signedData.s,
               estimatedGasFee,
               sideTokenBtcContract: this.swapFrom.address,
+              deadline: deadline,
             }),
           }
         );
 
         const receipt = await response.json();
+        if (response.status !== 201) {
+          console.error(receipt);
+          this.SEND_NOTIFICATION({
+            message: {
+              message: "Error Message",
+              data: receipt.response.error,
+              type: "danger",
+            },
+          });
+          return;
+        }
 
-        console.log("swap receipt", receipt);
+        await new Promise((resolve, reject) =>
+          transactionCallback({
+            resolve,
+            reject,
+            web3: this.web3,
+            explorer: txExplorerLink(
+              receipt.transactionHash,
+              process.env.VUE_APP_EXPLORER_ADDRESS
+            ),
+          })(null, receipt.transactionHash)
+        );
+
+        this.SEND_NOTIFICATION({
+          message: {
+            data: "swap receipt",
+            type: "success",
+          },
+        });
       } catch (err) {
         console.error("couldnt swap", err);
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: err.message,
+            type: "danger",
+          },
+        });
       } finally {
-        this.showSpinner = false;
+        this.STOP_SPINNER();
       }
     },
     async signWithMetamask(deadline) {
@@ -384,7 +476,9 @@ export default defineComponent({
         message: {
           owner: this.account,
           to: process.env.VUE_APP_RELAYER_ADDRESS,
-          value: new BigNumber(this.swapFrom.value).shiftedBy(this.swapFrom.decimals),
+          value: new BigNumber(this.swapFrom.value).shiftedBy(
+            this.swapFrom.decimals
+          ),
           deadline,
           nonce: nonce,
         },
@@ -419,6 +513,11 @@ export default defineComponent({
         deadline,
       };
     },
+    ...mapActions([
+      constants.START_SPINNER,
+      constants.STOP_SPINNER,
+      constants.SEND_NOTIFICATION,
+    ]),
   },
 });
 </script>
@@ -570,14 +669,14 @@ export default defineComponent({
   border: 1px solid #22de22;
   border-radius: 10px;
   height: 60px;
-  display : flex;
+  display: flex;
   flex-wrap: wrap;
-  align-items : center;
-  justify-content : center;
+  align-items: center;
+  justify-content: center;
 }
 .boxDisabled {
   background-color: #e5e5e5;
-  opacity: .65;
+  opacity: 0.65;
   border: none;
 }
 .input {

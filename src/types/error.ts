@@ -26,4 +26,10 @@ class UserNotificationError extends Error {
   }
 }
 
-export { ApiError, UserNotificationError };
+class MessageError extends Error {
+  constructor(message: string | undefined) {
+    super(message);
+  }
+}
+
+export { ApiError, UserNotificationError, MessageError };
