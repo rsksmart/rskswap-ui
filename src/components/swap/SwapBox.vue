@@ -140,6 +140,7 @@ import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 import { transactionCallback } from "@/utils/transactions";
 import { txExplorerLink } from "@/utils/address-helpers";
 import * as constants from "@/store/constants";
+import { MAX_SWAP_AMOUNT, VALID_CODES } from '@/constants/variables';
 import { GAS_AVG } from "@/utils/transactions";
 
 const { mapState, mapActions } = createNamespacedHelpers("session");
@@ -182,7 +183,6 @@ export default defineComponent({
     },
     async destinationAccount(value) {
       let code;
-      const VALID_ACCOUNT_CODE = ["0x", "0x0"];
       this.destinationAccountValid = false;
 
       if (!value) {
@@ -194,7 +194,7 @@ export default defineComponent({
       } catch (err) {
         console.log("Invalid Address");
       }
-      this.destinationAccountValid = VALID_ACCOUNT_CODE.includes(code);
+      this.destinationAccountValid = VALID_CODES.includes(code);
     },
   },
   data() {
@@ -525,7 +525,7 @@ export default defineComponent({
     async getMaximumAllowed() {
       let relayerBalance = await this.web3.eth.getBalance(process.env.VUE_APP_RELAYER_ADDRESS);
       relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
-      const maxSwap = 0.1;
+      const maxSwap = MAX_SWAP_AMOUNT;
       let userBalance = this.swapFrom.balance;
 
       Math.min(userBalance, relayerBalance) > maxSwap ? this.maximumAllowed = maxSwap :
