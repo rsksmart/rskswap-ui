@@ -120,7 +120,7 @@ import moment from "moment";
 import ERC20_ABI from "@/constants/abis/erc20.json";
 
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
-import { RKOVWBTC_TOKEN } from "@/constants/tokens/tokens";
+import { RBTC_TOKEN } from "@/constants/tokens/tokens";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 import { GAS_AVG } from "@/utils/transactions";
 
@@ -246,8 +246,9 @@ export default defineComponent({
     async pasteClipboard() {
       this.destinationAccount = await navigator.clipboard.readText();
     },
-    assignMaxValueToSwapValue() {
+    async assignMaxValueToSwapValue() {
       this.swapFrom.value = this.maximumAllowed;
+      await this.handleSwapInput();
     },
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
@@ -428,11 +429,9 @@ export default defineComponent({
     },
     async getMaximumAllowed() {
       let relayerBalance = await this.web3.eth.getBalance(process.env.VUE_APP_RELAYER_ADDRESS);
-      relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RKOVWBTC_TOKEN.decimals).toString());
-      const maxSwap = 30;
+      relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
+      const maxSwap = 0.1;
       let userBalance = this.swapFrom.balance;
-      userBalance = 5
-      relayerBalance = 7;
 
       Math.min(userBalance, relayerBalance) > maxSwap ? this.maximumAllowed = maxSwap :
         userBalance > relayerBalance ? this.maximumAllowed = relayerBalance : this.maximumAllowed = userBalance
