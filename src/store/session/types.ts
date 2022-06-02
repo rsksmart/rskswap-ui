@@ -32,4 +32,13 @@ export interface SessionState {
   rLoginInstance?: RLogin;
   currentChain?: ChainConfig;
   network: NetworkConfig;
+  showSpinner: boolean;
+  message?: Message;
+}
+
+export interface Message {
+  message?: string;
+  data?: string;
+  code?: string;
+  type?: "danger" | "success";
 }

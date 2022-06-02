@@ -17,19 +17,24 @@ export async function waitForReceipt(
   const interval = 10_000;
   return new Promise((resolve, reject) => {
     const checkInterval = setInterval(async () => {
-      timeElapsed += interval;
-      const receipt = await web3.eth.getTransactionReceipt(txHash);
-      if (receipt != null) {
+      try {
+        timeElapsed += interval;
+        const receipt = await web3.eth.getTransactionReceipt(txHash);
+        if (receipt != null) {
+          clearInterval(checkInterval);
+          return resolve(receipt);
+        }
+        if (timeElapsed > 300_000) {
+          clearInterval(checkInterval);
+          return reject(
+            new Error(
+              "Transaction was not mined within 300 seconds. Be aware that it might still be mined!"
+            )
+          );
+        }
+      } catch (error) {
         clearInterval(checkInterval);
-        return resolve(receipt);
-      }
-      if (timeElapsed > 300_000) {
-        clearInterval(checkInterval);
-        return reject(
-          new Error(
-            "Transaction was not mined within 300 seconds. Be aware that it might still be mined!"
-          )
-        );
+        return reject(error);
       }
     }, interval);
   });
