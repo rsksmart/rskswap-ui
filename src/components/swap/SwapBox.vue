@@ -151,6 +151,11 @@ export default defineComponent({
     SelectTokenModal,
   },
   watch: {
+    'swapFrom.value'(value) {
+      if(value > this.maximumAllowed) {
+        this.swapFrom.value = this.maximumAllowed;
+      }
+    },
     async account(value) {
       if (value) {
         this.swapFrom = await getDefaultSwapFrom(this.web3);
@@ -161,6 +166,7 @@ export default defineComponent({
       if (model) {
         this.hasAllowance = false;
         let balance;
+        
         if (model.type === "NATIVE") {
           if (!model.decimals) {
             console.error("decimals not defined for model ", model.token);
