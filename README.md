@@ -1,14 +1,14 @@
 # rskswap-ui
 Project for Swaping RBTC to rWBTC independently from the claim (and the other way round too) 
 
-## Architecture Diagram
-![Architecture Diagram](architecture-diagram.png)
+## Sequence Diagram
+![Sequence Diagram](sequence-diagram.png)
 
 
 ## Use Cases
 
 ### Swap WBTC to rBTC 
-This use case allows a user that has crossed WBTC/BTCB from multichain.org onto RSK (rWE to swap those tokens for RBTC, using a relayer that provides with the necessary liquidity an paid with the btc-pegged asset. The flow is described as in the following sequence diagram
+This use case allows a user that has crossed any token pegged to WBTC pool in multichain.org onto RSK (rWE to swap those tokens for RBTC, using a relayer that provides with the necessary liquidity an paid with the btc-pegged asset. The flow is described as in the following sequence diagram.
 
 ## Environment variables
 Duplicate .env.example and rename to .env
