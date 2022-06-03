@@ -12,7 +12,7 @@ export const RBTC_TOKEN: Token = {
   address: "0x",
 };
 
-export const RKOVWBTC_TOKEN: Token = {
+export const MULTICHAIN_WBTC_TOKEN: Token = {
   token: "WBTC",
   name: "Wrapped BTC",
   typeId: 0,
@@ -39,7 +39,7 @@ const getAllTokens = () => {
     case ENVIRONMENTS.MAINNET:
       return [RBTC_TOKEN, WBTC_TOKEN];
     default: // TESTNET
-      return [RBTC_TOKEN, RKOVWBTC_TOKEN];
+      return [RBTC_TOKEN, MULTICHAIN_WBTC_TOKEN];
   }
 };
 

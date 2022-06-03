@@ -25,9 +25,9 @@
                   @mouseleave="toggleshowMaxTooltip"
                 >
                   <div v-if="showMaxTooltip" class="tooltip-balance">
-                    <span> max: {{ this.swapFrom.balance }}</span>
+                    <span> max: {{ maximumAllowed }}</span>
                   </div>
-                  max: {{ this.swapFrom.balance }}
+                  max: {{ maximumAllowed }}
                 </span>
                 <SelectTokenModal v-model="swapFrom" :allowSelect="false" />
               </div>
@@ -135,10 +135,12 @@ import moment from "moment";
 
 import ERC20_ABI from "@/constants/abis/erc20.json";
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
+import { RBTC_TOKEN } from "@/constants/tokens/tokens";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 import { transactionCallback } from "@/utils/transactions";
 import { txExplorerLink } from "@/utils/address-helpers";
 import * as constants from "@/store/constants";
+import { MAX_SWAP_AMOUNT, VALID_CODES } from '@/constants/variables';
 import { GAS_AVG } from "@/utils/transactions";
 
 const { mapState, mapActions } = createNamespacedHelpers("session");
@@ -149,6 +151,11 @@ export default defineComponent({
     SelectTokenModal,
   },
   watch: {
+    'swapFrom.value'(value) {
+      if(value > this.maximumAllowed) {
+        this.swapFrom.value = this.maximumAllowed;
+      }
+    },
     async account(value) {
       if (value) {
         this.swapFrom = await getDefaultSwapFrom(this.web3);
@@ -159,6 +166,7 @@ export default defineComponent({
       if (model) {
         this.hasAllowance = false;
         let balance;
+        
         if (model.type === "NATIVE") {
           if (!model.decimals) {
             console.error("decimals not defined for model ", model.token);
@@ -176,14 +184,14 @@ export default defineComponent({
           balance = await tokenInst.methods.balanceOf(this.account).call();
           this.swapFrom.balance = this.web3.utils.fromWei(balance);
         }
+        await this.getMaximumAllowed();
       }
     },
     async destinationAccount(value) {
       let code;
-      const VALID_ACCOUNT_CODE = ["0x", "0x0"];
+      this.destinationAccountValid = false;
 
       if (!value) {
-        this.destinationAccountValid = false;
         return;
       }
 
@@ -192,7 +200,7 @@ export default defineComponent({
       } catch (err) {
         console.log("Invalid Address");
       }
-      this.destinationAccountValid = VALID_ACCOUNT_CODE.includes(code);
+      this.destinationAccountValid = VALID_CODES.includes(code);
     },
   },
   data() {
@@ -210,7 +218,8 @@ export default defineComponent({
       destinationAccount: "",
       destinationAccountValid: false,
       showMaxTooltip: false,
-      typeDestinationAddress: "connected",
+      typeDestinationAddress: 'connected',
+      maximumAllowed: 0,
     };
   },
   computed: {
@@ -280,8 +289,9 @@ export default defineComponent({
     async pasteClipboard() {
       this.destinationAccount = await navigator.clipboard.readText();
     },
-    assignMaxValueToSwapValue() {
-      this.swapFrom.value = this.swapFrom.balance;
+    async assignMaxValueToSwapValue() {
+      this.swapFrom.value = this.maximumAllowed;
+      await this.handleSwapInput();
     },
     toggleshowMaxTooltip() {
       this.showMaxTooltip = !this.showMaxTooltip;
@@ -322,6 +332,11 @@ export default defineComponent({
           },
         });
         console.error("Amount is required for the swap.");
+        return;
+      }
+
+      if (this.swapFrom.value > this.maximumAllowed) {
+        console.error(`You cant swap a value greater than then ${this.maximumAllowed}!`);
         return;
       }
 
@@ -512,6 +527,15 @@ export default defineComponent({
         chainId: Number(process.env.VUE_APP_CHAIN_ID),
         deadline,
       };
+    },
+    async getMaximumAllowed() {
+      let relayerBalance = await this.web3.eth.getBalance(process.env.VUE_APP_RELAYER_ADDRESS);
+      relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
+      const maxSwap = MAX_SWAP_AMOUNT;
+      let userBalance = this.swapFrom.balance;
+
+      Math.min(userBalance, relayerBalance) > maxSwap ? this.maximumAllowed = maxSwap :
+        userBalance > relayerBalance ? this.maximumAllowed = relayerBalance : this.maximumAllowed = userBalance
     },
     ...mapActions([
       constants.START_SPINNER,
