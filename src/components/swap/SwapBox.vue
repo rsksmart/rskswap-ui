@@ -366,11 +366,12 @@ export default defineComponent({
         this.SEND_NOTIFICATION({
           message: {
             message: "Error Message",
-            data: `no signed data!`,
+            data: `Connected wallet returned an error when trying to sign the transaction.`,
             type: "danger",
           },
         });
         console.error("no signed data!");
+        this.STOP_SPINNER();
         return null;
       }
 
@@ -448,7 +449,7 @@ export default defineComponent({
 
         const nonce = await CONTRACT.methods.nonces(this.account).call();
         const tokenName = await CONTRACT.methods.name().call();
-        return this.signMessage([
+        return await this.signMessage([
           this.account,
           JSON.stringify(this.parseMessageToSign(nonce, deadline, tokenName)),
         ]);
@@ -466,7 +467,7 @@ export default defineComponent({
             from: this.account,
           },
           (err, result) => {
-            if (err) reject(err);
+            if (err) return reject(err);
             if (result?.error) reject("result with error ", result?.error);
             if (!result.result) reject(new Error("Empty or undefined result!"));
 
