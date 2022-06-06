@@ -8,7 +8,7 @@ Project for Swaping RBTC to rWBTC independently from the claim (and the other wa
 ## Use Cases
 
 ### Swap WBTC to rBTC 
-This use case allows a user that has crossed any token pegged to WBTC pool in multichain.org onto RSK (rWE to swap those tokens for RBTC, using a relayer that provides with the necessary liquidity an paid with the btc-pegged asset. The flow is described as in the following sequence diagram.
+This use case allows a user that has crossed any token pegged to WBTC pool in multichain.org onto RSK to swap those tokens for RBTC, using a relayer that provides with the necessary liquidity and uses the Swap contract to swap those pegged assets for RBTC and recover the RBTC they sent to the user. The flow is described as in the following sequence diagram.
 
 ## Environment variables
 Duplicate .env.example and rename to .env
