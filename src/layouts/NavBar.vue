@@ -2,10 +2,10 @@
   <header>
     <!-- Navigation -->
     <nav class="navbar navbar-dark bg-dark">
-      <div class="group">
+      <div>
         <v-img alt="RSK" src="@/assets/swap-logo.png" width="90" height="90" />
       </div>
-      <div class="group">
+      <div>
         <div v-if="isConnected" class="menuItem badge-outline badge-pill">
           <span aria-describedby="tooltip-status" class="fromNetwork">
             {{ chainName }}
@@ -18,21 +18,17 @@
         >
           <span id="address">{{ this.account }}</span>
         </div>
-        <div
-          v-if="!isConnected"
-          id="navbarResponsive"
-          class="menuItem navbar-collapse collapse"
-        >
-          <div class="navbar-item ml-auto">
-            <button
-              id="logIn"
-              type="button"
-              class="btn btn-primary badge-pill"
-              @click="connectWalletClick"
-            >
-              Connect wallet
-            </button>
-          </div>
+      </div>
+      <div v-if="!isConnected" class="menuItem">
+        <div class="menuItem ml-auto">
+          <button
+            id="logIn"
+            type="button"
+            class="btn btn-primary badge-pill"
+            @click="connectWalletClick"
+          >
+            Connect wallet
+          </button>
         </div>
       </div>
     </nav>
@@ -90,9 +86,5 @@ export default {
 
 .menuItem {
   background-color: transparent;
-}
-
-.item:hover {
-  background-color: rgba(0, 0, 0, 0.1);
 }
 </style>
