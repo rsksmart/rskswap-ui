@@ -36,35 +36,35 @@
 </template>
 
 <script>
-import * as constants from "@/store/constants"
-import { createNamespacedHelpers } from "vuex"
+import * as constants from "@/store/constants";
+import { createNamespacedHelpers } from "vuex";
 
-const { mapState, mapGetters, mapActions } = createNamespacedHelpers("session")
+const { mapState, mapGetters, mapActions } = createNamespacedHelpers("session");
 
 export default {
   name: "NavBar",
   data() {
     return {
       sideNetworkConfig: null,
-    }
+    };
   },
   computed: {
     ...mapState(["enabled"]),
     ...mapState(["account"]),
     ...mapState(["currentChain"]),
     isConnected() {
-      console.log("enabled", this.enabled)
-      return this.enabled
+      console.log("enabled", this.enabled);
+      return this.enabled;
     },
     chainName() {
-      return this.currentChain?.name
+      return this.currentChain?.name;
     },
   },
   methods: {
     ...mapActions([constants.SESSION_CONNECT_WEB3]),
     connectWalletClick() {
       // handle login
-      return this.SESSION_CONNECT_WEB3()
+      return this.SESSION_CONNECT_WEB3();
     },
   },
 }
