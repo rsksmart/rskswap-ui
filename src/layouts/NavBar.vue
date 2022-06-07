@@ -36,24 +36,24 @@
 </template>
 
 <script>
-import * as constants from '@/store/constants'
-import { createNamespacedHelpers } from 'vuex'
+import * as constants from "@/store/constants"
+import { createNamespacedHelpers } from "vuex"
 
-const { mapState, mapGetters, mapActions } = createNamespacedHelpers('session')
+const { mapState, mapGetters, mapActions } = createNamespacedHelpers("session")
 
 export default {
-  name: 'NavBar',
+  name: "NavBar",
   data() {
     return {
       sideNetworkConfig: null,
     }
   },
   computed: {
-    ...mapState(['enabled']),
-    ...mapState(['account']),
-    ...mapState(['currentChain']),
+    ...mapState(["enabled"]),
+    ...mapState(["account"]),
+    ...mapState(["currentChain"]),
     isConnected() {
-      console.log('enabled', this.enabled)
+      console.log("enabled", this.enabled)
       return this.enabled
     },
     chainName() {
