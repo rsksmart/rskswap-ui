@@ -140,9 +140,10 @@ import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 import { transactionCallback } from "@/utils/transactions";
 import { txExplorerLink } from "@/utils/address-helpers";
 import * as constants from "@/store/constants";
-import { MAX_SWAP_AMOUNT, VALID_CODES } from '@/constants/variables';
+import { VALID_CODES } from '@/constants/variables';
 import { GAS_AVG } from "@/utils/transactions";
 import { parseMessageToSign } from '@/helpers/SignHelper';
+import { getMaximumAllowed } from '@/helpers/SwapHelper';
 
 const { mapState, mapActions } = createNamespacedHelpers("session");
 
@@ -507,11 +508,9 @@ export default defineComponent({
     async getMaximumAllowed() {
       let relayerBalance = await this.web3.eth.getBalance(process.env.VUE_APP_RELAYER_ADDRESS);
       relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
-      const maxSwap = MAX_SWAP_AMOUNT;
       let userBalance = this.swapFrom.balance;
 
-      Math.min(userBalance, relayerBalance) > maxSwap ? this.maximumAllowed = maxSwap :
-        userBalance > relayerBalance ? this.maximumAllowed = relayerBalance : this.maximumAllowed = userBalance
+      this.maximumAllowed = getMaximumAllowed(userBalance, relayerBalance);
     },
     ...mapActions([
       constants.START_SPINNER,
