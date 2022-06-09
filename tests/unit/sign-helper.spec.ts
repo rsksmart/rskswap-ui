@@ -1,0 +1,18 @@
+import { parseMessageToSign } from "@/helpers/SignHelper";
+import { parsedMessage } from "../mocks/parsedMessage";
+import { deepStrictEqual } from 'assert';
+
+describe("SignHelper", () => {
+  it("Should create the parsed message structure", () => {
+    const messageParsed = parseMessageToSign(
+      "0",
+      1654847820,
+      "AnyswapV6ERC20",
+      "0xa7260287Ab1845CA27A921AaE0048090AADB5F75",
+      "0xC7E2506A8Aa65F35C7A524Aef399fa731aF1780d",
+      0.1,
+      18
+    );
+    deepStrictEqual(JSON.stringify(messageParsed), JSON.stringify(parsedMessage));
+  });
+});

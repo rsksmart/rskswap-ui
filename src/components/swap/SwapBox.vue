@@ -142,6 +142,7 @@ import { txExplorerLink } from "@/utils/address-helpers";
 import * as constants from "@/store/constants";
 import { MAX_SWAP_AMOUNT, VALID_CODES } from '@/constants/variables';
 import { GAS_AVG } from "@/utils/transactions";
+import { parseMessageToSign } from '@/helpers/SignHelper';
 
 const { mapState, mapActions } = createNamespacedHelpers("session");
 
@@ -449,9 +450,20 @@ export default defineComponent({
 
         const nonce = await CONTRACT.methods.nonces(this.account).call();
         const tokenName = await CONTRACT.methods.name().call();
+        const dataToSign = parseMessageToSign(nonce, deadline, tokenName, this.swapFrom.address, this.account, this.swapFrom.value, this.swapFrom.decimals)
+        console.log({
+          'nonce': nonce,
+          'deadline': deadline,
+          'tokenname': tokenName,
+          'relayerVerifier': this.swapFrom.address,
+          'owner': this.account,
+          'value': this.swapFrom.value,
+          'decimals': this.swapFrom.decimals,
+          'dataToSign': dataToSign,
+        })
         return await this.signMessage([
           this.account,
-          JSON.stringify(this.parseMessageToSign(nonce, deadline, tokenName)),
+          JSON.stringify(dataToSign),
         ]);
       } catch (err) {
         console.error("couldnt sign message", err);
@@ -480,43 +492,6 @@ export default defineComponent({
           }
         );
       });
-    },
-    parseMessageToSign(nonce, deadline, tokenName) {
-      const messageData = {
-        domain: {
-          name: tokenName,
-          version: "1",
-          chainId: Number(process.env.VUE_APP_CHAIN_ID),
-          verifyingContract: this.swapFrom.address,
-        },
-        message: {
-          owner: this.account,
-          to: process.env.VUE_APP_RELAYER_ADDRESS,
-          value: new BigNumber(this.swapFrom.value).shiftedBy(
-            this.swapFrom.decimals
-          ),
-          deadline,
-          nonce: nonce,
-        },
-        primaryType: "Transfer",
-        types: {
-          EIP712Domain: [
-            { name: "name", type: "string" },
-            { name: "version", type: "string" },
-            { name: "chainId", type: "uint256" },
-            { name: "verifyingContract", type: "address" },
-          ],
-          Transfer: [
-            { name: "owner", type: "address" },
-            { name: "to", type: "address" },
-            { name: "value", type: "uint256" },
-            { name: "nonce", type: "uint256" },
-            { name: "deadline", type: "uint256" },
-          ],
-        },
-      };
-
-      return messageData;
     },
     parseSwapData(deadline) {
       return {
