@@ -1,6 +1,5 @@
 import { parseMessageToSign } from "@/helpers/SignHelper";
 import { parsedMessage } from "../mocks/parsedMessage";
-import { deepStrictEqual } from 'assert';
 
 describe("SignHelper", () => {
   it("Should create the parsed message structure", () => {

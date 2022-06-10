@@ -13,7 +13,7 @@ export const parseMessageToSign = (
     domain: {
       name: tokenName,
       version: "1",
-      chainId: Number(process.env.VUE_APP_CHAIN_ID),
+      chainId: Number(process.env.VUE_APP_CHAIN_ID) || 31,
       verifyingContract,
     },
     message: {
