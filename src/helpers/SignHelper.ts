@@ -18,7 +18,7 @@ export const parseMessageToSign = (
     },
     message: {
       owner,
-      to: process.env.VUE_APP_RELAYER_ADDRESS,
+      to: process.env.VUE_APP_RELAYER_ADDRESS || "0x722D892e6dDaa0EFDe08aC23FF25571D86FBacD4",
       value: new BigNumber(value).shiftedBy(
         decimals
       ),
