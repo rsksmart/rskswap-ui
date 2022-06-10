@@ -13,12 +13,12 @@ export const parseMessageToSign = (
     domain: {
       name: tokenName,
       version: "1",
-      chainId: Number(process.env.VUE_APP_CHAIN_ID) || 31,
+      chainId: Number(process.env.VUE_APP_CHAIN_ID),
       verifyingContract,
     },
     message: {
       owner,
-      to: process.env.VUE_APP_RELAYER_ADDRESS || "0x722D892e6dDaa0EFDe08aC23FF25571D86FBacD4",
+      to: process.env.VUE_APP_RELAYER_ADDRESS,
       value: new BigNumber(value).shiftedBy(
         decimals
       ),
