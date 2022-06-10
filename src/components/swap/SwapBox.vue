@@ -9,9 +9,10 @@
           <div class="currency-input">
             <div class="input-holder">
               <input
-                placeholder="0.0"
+                placeholder="amount to swap"
                 v-model="swapFrom.value"
                 @change="handleSwapInput"
+                @focus="clearSwapFrom"
                 type="number"
                 id="swapInput"
               />
@@ -44,7 +45,7 @@
           <span class="text-left ml-4">receive</span>
           <div class="currency-input">
             <div class="input-holder">
-              <input placeholder="0.0" v-model="swapTo.value" id="amountInput" />
+              <input placeholder="amount to receive" v-model="swapTo.value" id="amountInput" />
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
               >
@@ -317,6 +318,9 @@ export default defineComponent({
       } catch (err) {
         console.error("[handleSwapInput] ERROR: ", err);
       }
+    },
+    clearSwapFrom() {
+      this.swapFrom.value = null;
     },
     selectAddressType(type) {
       this.typeDestinationAddress = type;
