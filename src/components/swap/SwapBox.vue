@@ -13,6 +13,7 @@
                 v-model="swapFrom.value"
                 @change="handleSwapInput"
                 type="number"
+                id="swapInput"
               />
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
@@ -43,7 +44,7 @@
           <span class="text-left ml-4">receive</span>
           <div class="currency-input">
             <div class="input-holder">
-              <input placeholder="0.0" v-model="swapTo.value" />
+              <input placeholder="0.0" v-model="swapTo.value" id="amountInput" />
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
               >
