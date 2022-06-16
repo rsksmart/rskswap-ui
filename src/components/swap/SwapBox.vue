@@ -161,8 +161,8 @@ export default defineComponent({
     },
     async account(value) {
       if (value) {
-        this.swapFrom = await getDefaultSwapFrom(this.web3);
-        this.swapTo = await getDefaultSwapTo(this.web3);
+        this.swapFrom = await getDefaultSwapFrom(this.web3, value);
+        this.swapTo = await getDefaultSwapTo(this.web3, value);
       }
     },
     async swapFrom(model) {
