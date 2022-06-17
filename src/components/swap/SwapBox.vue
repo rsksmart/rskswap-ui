@@ -124,6 +124,22 @@
           </div>
         </div>
       </div>
+
+      <InfoModal v-if="showModal" @close="showModal = false">
+        <template #title> Why am I required to sign twice? </template>
+        <template #body>
+          <p>The swap requires you to sign the information to be sent to
+            multichain.org ERC20 token EIP712Domain.</p>
+          <img src="signature.png" alt="signature request" />
+          <p>
+            Additionally, we add an extra security layer with all the
+            transaction data <b>relevant for the swap.</b>
+          </p>
+          <img src="signature.png" alt="signature request" />
+          <img src="relayer-sig-req.png" alt="claim transaction" />
+        </template>
+      </InfoModal>
+
     </section>
   </div>
 </template>
@@ -138,6 +154,7 @@ import ERC20_ABI from "@/constants/abis/erc20.json";
 import RELAYER_ABI from "@/constants/abis/relayer.json";
 
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
+import InfoModal from "@/components/core/InfoModal.vue";
 import { RBTC_TOKEN } from "@/constants/tokens/tokens";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 import { transactionCallback } from "@/utils/transactions";
@@ -152,6 +169,7 @@ export default defineComponent({
   name: "SwapBox",
   components: {
     SelectTokenModal,
+    InfoModal,
   },
   watch: {
     "swapFrom.value"(value) {
@@ -223,6 +241,7 @@ export default defineComponent({
       showMaxTooltip: false,
       typeDestinationAddress: "connected",
       maximumAllowed: 0,
+      showModal: false,
     };
   },
   computed: {
@@ -361,6 +380,7 @@ export default defineComponent({
       }
 
       this.START_SPINNER();
+      this.showModal = true;
 
       const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
       const gasFeeInWei = new BigNumber(gasCost).shiftedBy(18).toString();
@@ -380,6 +400,8 @@ export default defineComponent({
         });
         console.error("no signed data!");
         this.STOP_SPINNER();
+        this.showModal = false;
+
         return null;
       }
 
@@ -398,6 +420,7 @@ export default defineComponent({
         });
         console.error("no signed data!");
         this.STOP_SPINNER();
+        this.showModal = false;
         return null;
       }
       try {
@@ -466,6 +489,7 @@ export default defineComponent({
         });
       } finally {
         this.STOP_SPINNER();
+        this.showModal = false;
       }
     },
     async signAnyswapWithMetamask(deadline) {
