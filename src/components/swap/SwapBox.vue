@@ -130,7 +130,6 @@
         <template #body>
           <p>The swap requires you to sign the information to be sent to
             multichain.org ERC20 token EIP712Domain.</p>
-          <img src="signature.png" alt="signature request" />
           <p>
             Additionally, we add an extra security layer with all the
             transaction data <b>relevant for the swap.</b>
