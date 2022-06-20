@@ -3,12 +3,12 @@ import ERC20_ABI from "@/constants/abis/erc20.json";
 import BigNumber from "bignumber.js";
 import { Token } from "@/types/token";
 
-export const getDefaultSwapFrom = async (web3: any) => {
-  return getSwapData(web3, web3.currentProvider.selectedAddress, "WBTC");
+export const getDefaultSwapFrom = async (web3: any, accountAddress: string) => {
+  return getSwapData(web3, accountAddress, "WBTC");
 };
 
-export const getDefaultSwapTo = async (web3: any) => {
-  return getSwapData(web3, web3.currentProvider.selectedAddress, "RBTC");
+export const getDefaultSwapTo = async (web3: any, accountAddress: string) => {
+  return getSwapData(web3, accountAddress, "RBTC");
 };
 
 export const getSwapData = async (

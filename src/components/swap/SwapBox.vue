@@ -127,6 +127,18 @@
           </div>
         </div>
       </div>
+
+      <InfoModal v-if="showModal" @close="showModal = false">
+        <template #title> Why am I required to sign twice? </template>
+        <template #body>
+          <p>The swap requires you to sign the information to be sent to
+            multichain.org ERC20 token EIP712Domain.</p>
+          <p>
+            Additionally, we add an extra security layer with all the
+            transaction data <b>relevant for the swap.</b>
+          </p>
+        </template>
+      </InfoModal>
     </section>
   </div>
 </template>
@@ -138,13 +150,16 @@ import BigNumber from "bignumber.js";
 import moment from "moment";
 
 import ERC20_ABI from "@/constants/abis/erc20.json";
+import RELAYER_ABI from "@/constants/abis/relayer.json";
+
 import SelectTokenModal from "@/components/shared/select-token/SelectTokenModal.vue";
+import InfoModal from "@/components/core/InfoModal.vue";
 import { RBTC_TOKEN } from "@/constants/tokens/tokens";
 import { getDefaultSwapFrom, getDefaultSwapTo } from "@/utils/token-binding";
 import { transactionCallback } from "@/utils/transactions";
 import { txExplorerLink } from "@/utils/address-helpers";
 import * as constants from "@/store/constants";
-import { VALID_CODES } from '@/constants/variables';
+import { MAX_SWAP_AMOUNT, VALID_CODES } from "@/constants/variables";
 import { GAS_AVG } from "@/utils/transactions";
 import { parseMessageToSign } from '@/helpers/SignHelper';
 import { getMaximumAllowed } from '@/helpers/SwapHelper';
@@ -155,24 +170,25 @@ export default defineComponent({
   name: "SwapBox",
   components: {
     SelectTokenModal,
+    InfoModal,
   },
   watch: {
-    'swapFrom.value'(value) {
-      if(value > this.maximumAllowed) {
+    "swapFrom.value"(value) {
+      if (value > this.maximumAllowed) {
         this.swapFrom.value = this.maximumAllowed;
       }
     },
     async account(value) {
       if (value) {
-        this.swapFrom = await getDefaultSwapFrom(this.web3);
-        this.swapTo = await getDefaultSwapTo(this.web3);
+        this.swapFrom = await getDefaultSwapFrom(this.web3, value);
+        this.swapTo = await getDefaultSwapTo(this.web3, value);
       }
     },
     async swapFrom(model) {
       if (model) {
         this.hasAllowance = false;
         let balance;
-        
+
         if (model.type === "NATIVE") {
           if (!model.decimals) {
             console.error("decimals not defined for model ", model.token);
@@ -224,8 +240,9 @@ export default defineComponent({
       destinationAccount: "",
       destinationAccountValid: false,
       showMaxTooltip: false,
-      typeDestinationAddress: 'connected',
+      typeDestinationAddress: "connected",
       maximumAllowed: 0,
+      showModal: false,
     };
   },
   computed: {
@@ -345,7 +362,9 @@ export default defineComponent({
       }
 
       if (this.swapFrom.value > this.maximumAllowed) {
-        console.error(`You cant swap a value greater than then ${this.maximumAllowed}!`);
+        console.error(
+          `You cant swap a value greater than then ${this.maximumAllowed}!`
+        );
         return;
       }
 
@@ -362,6 +381,7 @@ export default defineComponent({
       }
 
       this.START_SPINNER();
+      this.showModal = true;
 
       const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
       const gasFeeInWei = new BigNumber(gasCost).shiftedBy(18).toString();
@@ -369,9 +389,9 @@ export default defineComponent({
       const estimatedGasFee = { amount: gasFeeInWei, unitType: "wei" };
 
       const deadline = Number(moment().add(12, "hours").unix());
-      const signedData = await this.signWithMetamask(deadline); // needs to match what is in contract
+      const signedAnyswapData = await this.signAnyswapWithMetamask(deadline); // needs to match what is in contract
 
-      if (!signedData) {
+      if (!signedAnyswapData) {
         this.SEND_NOTIFICATION({
           message: {
             message: "Error Message",
@@ -381,9 +401,29 @@ export default defineComponent({
         });
         console.error("no signed data!");
         this.STOP_SPINNER();
+        this.showModal = false;
+
         return null;
       }
 
+      const signedRelayerData = await this.signRelayerWithMetamask(
+        deadline,
+        estimatedGasFee
+      );
+
+      if (!signedRelayerData) {
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: `Connected wallet returned an error when trying to sign the transaction.`,
+            type: "danger",
+          },
+        });
+        console.error("no signed data!");
+        this.STOP_SPINNER();
+        this.showModal = false;
+        return null;
+      }
       try {
         const response = await fetch(
           `${process.env.VUE_APP_RELAYER_ENDPOINT}/swap`,
@@ -395,9 +435,12 @@ export default defineComponent({
             body: JSON.stringify({
               swapData: this.parseSwapData(deadline),
               relayerAddress: process.env.VUE_APP_RELAYER_ADDRESS,
-              v: signedData.v,
-              r: signedData.r,
-              s: signedData.s,
+              relayerV: signedRelayerData.v,
+              relayerR: signedRelayerData.r,
+              relayerS: signedRelayerData.s,
+              anyswapV: signedAnyswapData.v,
+              anyswapR: signedAnyswapData.r,
+              anyswapS: signedAnyswapData.s,
               estimatedGasFee,
               sideTokenBtcContract: this.swapFrom.address,
               deadline: deadline,
@@ -447,22 +490,41 @@ export default defineComponent({
         });
       } finally {
         this.STOP_SPINNER();
+        this.showModal = false;
       }
     },
-    async signWithMetamask(deadline) {
+    async signAnyswapWithMetamask(deadline) {
       try {
-        const CONTRACT = await new this.web3.eth.Contract(
+        const tokenContract = await new this.web3.eth.Contract(
           ERC20_ABI,
           this.swapFrom.address
         );
 
-        const nonce = await CONTRACT.methods.nonces(this.account).call();
-        const tokenName = await CONTRACT.methods.name().call();
-        const dataToSign = parseMessageToSign(nonce, deadline, tokenName, this.swapFrom.address, this.account, this.swapFrom.value, this.swapFrom.decimals)
-        
+        const nonce = await tokenContract.methods.nonces(this.account).call();
+        const tokenName = await tokenContract.methods.name().call();
         return await this.signMessage([
           this.account,
-          JSON.stringify(dataToSign),
+          JSON.stringify(
+            this.parseAnyswapMessageToSign(nonce, deadline, tokenName)
+          ),
+        ]);
+      } catch (err) {
+        console.error("couldnt sign message", err);
+      }
+      return null;
+    },
+    async signRelayerWithMetamask(deadline, fee) {
+      try {
+        const relayerContract = await new this.web3.eth.Contract(
+          RELAYER_ABI,
+          process.env.VUE_APP_RELAYER_ADDRESS
+        );
+
+        const nonce = await relayerContract.methods.nonces(this.account).call();
+
+        return await this.signMessage([
+          this.account,
+          JSON.stringify(this.parseRelayerMessageToSign(nonce, deadline, fee)),
         ]);
       } catch (err) {
         console.error("couldnt sign message", err);
@@ -492,6 +554,86 @@ export default defineComponent({
         );
       });
     },
+    parseAnyswapMessageToSign(nonce, deadline, tokenName) {
+      const messageData = {
+        domain: {
+          name: tokenName,
+          version: "1",
+          chainId: Number(process.env.VUE_APP_CHAIN_ID),
+          verifyingContract: this.swapFrom.address,
+        },
+        message: {
+          owner: this.account,
+          to: process.env.VUE_APP_RELAYER_ADDRESS,
+          value: new BigNumber(this.swapFrom.value).shiftedBy(
+            this.swapFrom.decimals
+          ),
+          deadline,
+          nonce: nonce,
+        },
+        primaryType: "Transfer",
+        types: {
+          EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
+            { name: "chainId", type: "uint256" },
+            { name: "verifyingContract", type: "address" },
+          ],
+          Transfer: [
+            { name: "owner", type: "address" },
+            { name: "to", type: "address" },
+            { name: "value", type: "uint256" },
+            { name: "nonce", type: "uint256" },
+            { name: "deadline", type: "uint256" },
+          ],
+        },
+      };
+
+      return messageData;
+    },
+    parseRelayerMessageToSign(nonce, deadline, fee) {
+      const messageData = {
+        domain: {
+          name: "RSK Relayer",
+          version: "1",
+          chainId: Number(process.env.VUE_APP_CHAIN_ID),
+          verifyingContract: process.env.VUE_APP_RELAYER_ADDRESS,
+        },
+        message: {
+          from: this.account,
+          to: this.transferAddress,
+          amount: new BigNumber(this.swapFrom.value).shiftedBy(
+            this.swapFrom.decimals
+          ),
+          chainId: Number(process.env.VUE_APP_CHAIN_ID),
+          relayer: process.env.VUE_APP_RELAYER_ADDRESS,
+          fee: new BigNumber(fee.amount),
+          deadline,
+          nonce: nonce,
+        },
+        primaryType: "Swap",
+        types: {
+          EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
+            { name: "chainId", type: "uint256" },
+            { name: "verifyingContract", type: "address" },
+          ],
+          Swap: [
+            { name: "from", type: "address" },
+            { name: "to", type: "address" },
+            { name: "amount", type: "uint256" },
+            { name: "chainId", type: "uint256" },
+            { name: "relayer", type: "address" },
+            { name: "fee", type: "uint256" },
+            { name: "deadline", type: "uint256" },
+            { name: "nonce", type: "uint256" },
+          ],
+        },
+      };
+
+      return messageData;
+    },
     parseSwapData(deadline) {
       return {
         fromAddress: this.account,
@@ -504,7 +646,9 @@ export default defineComponent({
       };
     },
     async getMaximumAllowed() {
-      let relayerBalance = await this.web3.eth.getBalance(process.env.VUE_APP_RELAYER_ADDRESS);
+      let relayerBalance = await this.web3.eth.getBalance(
+        process.env.VUE_APP_RELAYER_ADDRESS
+      );
       relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
       let userBalance = this.swapFrom.balance;
 
