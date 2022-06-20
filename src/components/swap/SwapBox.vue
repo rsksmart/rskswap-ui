@@ -62,6 +62,7 @@
               <div class="col-md-6 col-sm-12 mb-3">
                 <div
                   class="addressBox"
+                  id="connectedAddress"
                   :class="handleConnectedDisabled"
                   :disabled="
                     !walletConnected || typeDestinationAddress !== 'connected'
@@ -85,6 +86,7 @@
               <div class="col-md-6 col-sm-12 mb-3">
                 <div
                   class="addressBox"
+                  id="differentAddress"
                   :class="handleDifferentDisabled"
                   @click="selectAddressType('different', $event)"
                 >
@@ -457,16 +459,7 @@ export default defineComponent({
         const nonce = await CONTRACT.methods.nonces(this.account).call();
         const tokenName = await CONTRACT.methods.name().call();
         const dataToSign = parseMessageToSign(nonce, deadline, tokenName, this.swapFrom.address, this.account, this.swapFrom.value, this.swapFrom.decimals)
-        console.log({
-          'nonce': nonce,
-          'deadline': deadline,
-          'tokenname': tokenName,
-          'relayerVerifier': this.swapFrom.address,
-          'owner': this.account,
-          'value': this.swapFrom.value,
-          'decimals': this.swapFrom.decimals,
-          'dataToSign': dataToSign,
-        })
+        
         return await this.signMessage([
           this.account,
           JSON.stringify(dataToSign),
