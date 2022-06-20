@@ -44,7 +44,7 @@
           <span class="text-left ml-4">receive</span>
           <div class="currency-input">
             <div class="input-holder">
-              <input placeholder="amount to receive" v-model="swapTo.value" />
+              <input placeholder="amount to receive" v-model="swapTo.value" @change="handleSwapOutput"/>
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
               >
@@ -314,6 +314,16 @@ export default defineComponent({
           .toString();
       } catch (err) {
         console.error("[handleSwapInput] ERROR: ", err);
+      }
+    },
+    async handleSwapOutput() {
+      try {
+        const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
+        this.swapFrom.value = new BigNumber(this.swapTo.value)
+            .plus(gasCost)
+            .toString();
+      } catch (err) {
+        console.error("[handleSwapOutput] ERROR: ", err);
       }
     },
     clearSwapFrom() {
