@@ -322,6 +322,12 @@ export default defineComponent({
         this.swapFrom.value = new BigNumber(this.swapTo.value)
             .plus(gasCost)
             .toString();
+
+        if (this.swapFrom.value > this.maximumAllowed) {
+          this.swapTo.value = new BigNumber(this.maximumAllowed)
+            .minus(gasCost)
+            .toString()
+        }
       } catch (err) {
         console.error("[handleSwapOutput] ERROR: ", err);
       }
