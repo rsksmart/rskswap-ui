@@ -135,11 +135,8 @@
             Additionally, we add an extra security layer with all the
             transaction data <b>relevant for the swap.</b>
           </p>
-          <img src="signature.png" alt="signature request" />
-          <img src="relayer-sig-req.png" alt="claim transaction" />
         </template>
       </InfoModal>
-
     </section>
   </div>
 </template>
