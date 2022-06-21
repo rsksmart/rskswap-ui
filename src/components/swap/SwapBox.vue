@@ -227,7 +227,7 @@ export default defineComponent({
       try {
         code = await this.web3.eth.getCode(this.destinationAccount);
       } catch (err) {
-        console.log("Invalid Address");
+        console.error("Invalid Address");
       }
       this.destinationAccountValid = VALID_CODES.includes(code);
     },
@@ -495,7 +495,6 @@ export default defineComponent({
             ),
           })(null, receipt.transactionHash)
         );
-        console.log(receipt);
         this.SEND_NOTIFICATION({
           message: {
             data: `Congratulations! You have just swapped ${this.swapFrom.value} WBTC for RBTC.`,
