@@ -4,7 +4,7 @@ export function getMaximumAllowed(userBalance: number, relayerBalance: number) {
     let maxSwap = MAX_SWAP_AMOUNT;
 
     if (Math.min(userBalance, relayerBalance) <= maxSwap) {
-        userBalance > relayerBalance ? maxSwap = relayerBalance : maxSwap = userBalance;
+        maxSwap = userBalance > relayerBalance ? relayerBalance : userBalance;
     }
     
     return maxSwap;
