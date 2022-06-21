@@ -14,6 +14,7 @@
                 @change="handleSwapInput"
                 @focus="clearSwapFrom"
                 type="number"
+                id="swapInput"
               />
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
@@ -49,6 +50,7 @@
                 v-model="swapTo.value"
                 @change="handleSwapOutput"
                 type="number"
+                id="amountInput"
               />
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
@@ -66,6 +68,7 @@
               <div class="col-md-6 col-sm-12 mb-3">
                 <div
                   class="addressBox"
+                  id="connectedAddress"
                   :class="handleConnectedDisabled"
                   :disabled="
                     !walletConnected || typeDestinationAddress !== 'connected'
@@ -89,6 +92,7 @@
               <div class="col-md-6 col-sm-12 mb-3">
                 <div
                   class="addressBox"
+                  id="differentAddress"
                   :class="handleDifferentDisabled"
                   @click="selectAddressType('different', $event)"
                 >
@@ -163,6 +167,8 @@ import { txExplorerLink } from "@/utils/address-helpers";
 import * as constants from "@/store/constants";
 import { MAX_SWAP_AMOUNT, VALID_CODES } from "@/constants/variables";
 import { GAS_AVG } from "@/utils/transactions";
+import { parseMessageToSign } from '@/helpers/SignHelper';
+import { getMaximumAllowed } from '@/helpers/SwapHelper';
 
 const { mapState, mapActions } = createNamespacedHelpers("session");
 
@@ -672,11 +678,9 @@ export default defineComponent({
         process.env.VUE_APP_RELAYER_ADDRESS
       );
       relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
-
-      const maxSwap = MAX_SWAP_AMOUNT;
       let userBalance = this.swapFrom.balance;
-      Math.min(userBalance, relayerBalance) > maxSwap ? this.maximumAllowed = maxSwap :
-        userBalance > relayerBalance ? this.maximumAllowed = relayerBalance : this.maximumAllowed = userBalance
+
+      this.maximumAllowed = getMaximumAllowed(userBalance, relayerBalance);
     },
     ...mapActions([
       constants.START_SPINNER,
