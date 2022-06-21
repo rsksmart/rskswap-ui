@@ -105,6 +105,13 @@ export default {
   background-color: $primaryLight !important;
 }
 
+.bg-danger {
+  background-color: $error !important;
+  color: $darkBackground;
+  font-weight: bold;
+  font-size: 10pt;
+}
+
 .box-header {
   border-radius: 0.4rem;
 }
