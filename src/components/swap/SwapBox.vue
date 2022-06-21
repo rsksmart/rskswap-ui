@@ -227,7 +227,7 @@ export default defineComponent({
       try {
         code = await this.web3.eth.getCode(this.destinationAccount);
       } catch (err) {
-        console.log("Invalid Address");
+        console.error("Invalid Address");
       }
       this.destinationAccountValid = VALID_CODES.includes(code);
     },
@@ -386,7 +386,7 @@ export default defineComponent({
 
       if (this.swapFrom.value > this.maximumAllowed) {
         console.error(
-          `You cant swap a value greater than then ${this.maximumAllowed}!`
+          `You cant swap a value greater than ${this.maximumAllowed}!`
         );
         return;
       }
@@ -495,10 +495,9 @@ export default defineComponent({
             ),
           })(null, receipt.transactionHash)
         );
-
         this.SEND_NOTIFICATION({
           message: {
-            data: "swap receipt",
+            data: `Congratulations! You have just swapped ${this.swapFrom.value} WBTC for RBTC.`,
             type: "success",
           },
         });
