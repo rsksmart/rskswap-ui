@@ -101,6 +101,10 @@ export default {
   background-color: $success !important;
 }
 
+.bg-info {
+  background-color: $primaryLight !important;
+}
+
 .box-header {
   border-radius: 0.4rem;
 }
