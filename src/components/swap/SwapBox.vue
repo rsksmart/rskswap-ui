@@ -171,6 +171,13 @@ export default defineComponent({
     "swapFrom.value"(value) {
       if (value > this.maximumAllowed) {
         this.swapFrom.value = this.maximumAllowed;
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Amount changed",
+            data: "Since you entered a value higher than the maximum allowed, we conveniently changed the value for you",
+            type: "info",
+          },
+        });
       }
     },
     async account(value) {
