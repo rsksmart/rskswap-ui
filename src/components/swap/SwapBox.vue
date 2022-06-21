@@ -45,7 +45,13 @@
           <span class="text-left ml-4">receive</span>
           <div class="currency-input">
             <div class="input-holder">
-              <input placeholder="amount to receive" v-model="swapTo.value" id="amountInput" />
+              <input
+                placeholder="amount to receive"
+                v-model="swapTo.value"
+                @change="handleSwapOutput"
+                type="number"
+                id="amountInput"
+              />
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
               >
@@ -176,6 +182,13 @@ export default defineComponent({
     "swapFrom.value"(value) {
       if (value > this.maximumAllowed) {
         this.swapFrom.value = this.maximumAllowed;
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Amount changed",
+            data: "Since you entered a value higher than the maximum allowed, we conveniently changed the value for you",
+            type: "info",
+          },
+        });
       }
     },
     async account(value) {
@@ -336,6 +349,22 @@ export default defineComponent({
           .toString();
       } catch (err) {
         console.error("[handleSwapInput] ERROR: ", err);
+      }
+    },
+    async handleSwapOutput() {
+      try {
+        const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
+        this.swapFrom.value = new BigNumber(this.swapTo.value)
+            .plus(gasCost)
+            .toString();
+
+        if (this.swapFrom.value > this.maximumAllowed) {
+          this.swapTo.value = new BigNumber(this.maximumAllowed)
+            .minus(gasCost)
+            .toString()
+        }
+      } catch (err) {
+        console.error("[handleSwapOutput] ERROR: ", err);
       }
     },
     clearSwapFrom() {
