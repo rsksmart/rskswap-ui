@@ -75,8 +75,6 @@
                   "
                   @click="selectAddressType('connected', $event)"
                 >
-                  <div>connected address</div>
-                  <br />
                   <div v-if="walletConnected" class="text">
                     <i
                       v-if="
@@ -85,7 +83,7 @@
                       "
                       class="fa fa-check"
                     ></i>
-                    {{ account }}
+                    connected address
                   </div>
                 </div>
               </div>
