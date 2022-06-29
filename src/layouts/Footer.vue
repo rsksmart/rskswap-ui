@@ -43,7 +43,7 @@
                   <v-icon>mdi-twitter</v-icon>
                 </a>
                 <a
-                  href="https://github.com/rsksmart/tokenbridge-ui"
+                  href="https://github.com/rsksmart/rskswap-ui"
                   target="_blank"
                 >
                   <v-icon>mdi-github</v-icon>
