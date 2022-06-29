@@ -1,7 +1,7 @@
 <template>
   <div>
     <Button
-      :disabled="!walletConnected"
+      v-if="walletConnected"
       class="d-flex align-items-center select-token-button"
       :variant="modelValue ? 'dark' : 'primary'"
       rounded
@@ -18,9 +18,6 @@
             {{ selectedToken.token }}
           </h3>
         </div>
-      </template>
-      <template v-else-if="!walletConnected"
-        ><span class="py-1">not connected</span>
       </template>
       <template v-else><span class="py-1">select a token</span> </template>
       <i v-if="allowSelect" class="ml-2 fa-solid fa-angle-down"></i>

@@ -5,11 +5,11 @@
 
       <article class="box-body">
         <div class="w-100 d-flex flex-column">
-          <span class="text-left ml-4">swap</span>
+          <span class="text-left ml-4">amount to swap</span>
           <div class="currency-input">
             <div class="input-holder">
               <input
-                placeholder="amount to swap"
+                placeholder="0.00"
                 v-model="swapFrom.value"
                 @change="handleSwapInput"
                 @focus="clearSwapFrom"
@@ -42,11 +42,11 @@
           </button>
         </div>
         <div class="w-100 d-flex flex-column">
-          <span class="text-left ml-4">receive</span>
+          <span class="text-left ml-4">amount to receive</span>
           <div class="currency-input">
             <div class="input-holder">
               <input
-                placeholder="amount to receive"
+                placeholder="0.00"
                 v-model="swapTo.value"
                 @change="handleSwapOutput"
                 type="number"
@@ -102,7 +102,9 @@
                     <i
                       v-if="
                         walletConnected &&
-                        typeDestinationAddress === 'different'
+                        typeDestinationAddress === 'different' &&
+                        destinationAccountValid &&
+                        destinationAccount
                       "
                       class="fa fa-check"
                     ></i>
@@ -133,13 +135,11 @@
       </div>
 
       <InfoModal v-if="showModal" @close="showModal = false">
-        <template #title> Why am I required to sign twice? </template>
+        <template #title> You will be required to sign twice </template>
         <template #body>
-          <p>The swap requires you to sign the information to be sent to
-            multichain.org ERC20 token EIP712Domain.</p>
+          <p><b>Why?</b></p>
           <p>
-            Additionally, we add an extra security layer with all the
-            transaction data <b>relevant for the swap.</b>
+            For security a double signature mechanism is required when performing a swap operation.
           </p>
         </template>
       </InfoModal>
@@ -712,7 +712,7 @@ export default defineComponent({
   margin-bottom: 48px;
 }
 .currency-input {
-  border-radius: 50px;
+  border-radius: 10px;
   padding: 0.5rem 1rem;
   border: 1px solid $darkBorderColor;
   background-color: $darkSecondaryBackground;
