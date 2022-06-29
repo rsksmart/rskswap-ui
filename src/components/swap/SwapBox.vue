@@ -712,7 +712,7 @@ export default defineComponent({
   margin-bottom: 48px;
 }
 .currency-input {
-  border-radius: 50px;
+  border-radius: 10px;
   padding: 0.5rem 1rem;
   border: 1px solid $darkBorderColor;
   background-color: $darkSecondaryBackground;
