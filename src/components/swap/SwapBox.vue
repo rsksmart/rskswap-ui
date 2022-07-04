@@ -317,6 +317,11 @@ export default defineComponent({
     },
   },
   methods: {
+    initSwapData() {
+      this.swapFrom.value = 0;
+      this.swapTo.value = 0;
+      this.typeDestinationAddress = "connected";
+    },
     getTokenByAddress(address) {
       return this.allTokens.find((token) => token.address === address);
     },
@@ -376,6 +381,8 @@ export default defineComponent({
       }
     },
     async onSwap() {
+      const userBalance = await this.web3.eth.getBalance(this.account);
+      
       if (!this.swapFrom.value || this.swapFrom.value <= 0) {
         this.SEND_NOTIFICATION({
           message: {
@@ -385,6 +392,18 @@ export default defineComponent({
           },
         });
         console.error("Amount is required for the swap.");
+        return;
+      }
+
+      if (userBalance < this.swapFrom.value) {
+        this.SEND_NOTIFICATION({
+          message: {
+            message: "Error Message",
+            data: `User has no balance to swap.`,
+            type: "danger",
+          },
+        });
+        console.error("User has no balance to swap.");
         return;
       }
 
@@ -518,6 +537,7 @@ export default defineComponent({
         this.STOP_SPINNER();
         this.showModal = false;
       }
+      this.initSwapData();
     },
     async signAnyswapWithMetamask(deadline) {
       try {
