@@ -317,10 +317,11 @@ export default defineComponent({
     },
   },
   methods: {
-    initSwapData() {
+    async initSwapData() {
       this.swapFrom.value = 0;
       this.swapTo.value = 0;
       this.typeDestinationAddress = "connected";
+      await this.getMaximumAllowed();
     },
     getTokenByAddress(address) {
       return this.allTokens.find((token) => token.address === address);
@@ -695,10 +696,14 @@ export default defineComponent({
       let relayerBalance = await this.web3.eth.getBalance(
         process.env.VUE_APP_RELAYER_ADDRESS
       );
+      let swapBalance = await this.web3.eth.getBalance(
+        process.env.VUE_APP_SWAP_ADDRESS
+      );
       relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
+      swapBalance = +(new BigNumber(swapBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
       let userBalance = this.swapFrom.balance;
 
-      this.maximumAllowed = getMaximumAllowed(userBalance, relayerBalance);
+      this.maximumAllowed = getMaximumAllowed(userBalance, relayerBalance, swapBalance);
     },
     ...mapActions([
       constants.START_SPINNER,

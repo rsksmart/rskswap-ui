@@ -48,4 +48,4 @@ export const gasPriceHex = async (web3: Web3): Promise<string> => {
   return `0x${Math.ceil(gasPriceParsed).toString(16)}`;
 };
 
-export const GAS_AVG = 180_000;
+export const GAS_AVG = 200_000;
