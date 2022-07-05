@@ -178,6 +178,10 @@ export default defineComponent({
   },
   watch: {
     "swapFrom.value"(value) {
+      if (value <= 0) {
+        return ;
+      }
+
       if (value > this.maximumAllowed) {
         this.swapFrom.value = this.maximumAllowed;
         this.SEND_NOTIFICATION({
@@ -254,6 +258,7 @@ export default defineComponent({
       typeDestinationAddress: "connected",
       maximumAllowed: 0,
       showModal: false,
+      disableSwapButton: true,
     };
   },
   computed: {
@@ -286,9 +291,10 @@ export default defineComponent({
         this.isDestinationAddressDifferentAndDestinationAccountValid,
       ].some((condition) => condition);
       const IS_BUTTON_SWAP_DISABLED = !CONDITIONS_TO_ENABLE_BUTTON_SWAP;
+      const DISABLE_SWAP_BUTTON = this.disableSwapButton;
 
       return (
-        WALLET_IS_NOT_CONNECTED || IS_SPINNER_RUNNING || IS_BUTTON_SWAP_DISABLED
+        WALLET_IS_NOT_CONNECTED || IS_SPINNER_RUNNING || IS_BUTTON_SWAP_DISABLED || DISABLE_SWAP_BUTTON
       );
     },
     isConnectedAndAccountPresent() {
@@ -346,7 +352,15 @@ export default defineComponent({
         .toString();
     },
     async handleSwapInput() {
+      if (this.swapFrom.value <= 0) {
+        this.disableSwapButton = true;
+        this.swapFrom.value = 0;
+        this.swapTo.value = 0;
+        return ;
+      }
+
       try {
+        this.disableSwapButton = false;
         const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
         this.swapTo.value = new BigNumber(this.swapFrom.value)
           .minus(gasCost)
