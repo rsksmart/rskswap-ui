@@ -370,6 +370,13 @@ export default defineComponent({
       }
     },
     async handleSwapOutput() {
+      if (this.swapTo.value <= 0) {
+        this.disableSwapButton = true;
+        this.swapFrom.value = 0;
+        this.swapTo.value = 0;
+        return ;
+      }
+
       try {
         const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
         this.swapFrom.value = new BigNumber(this.swapTo.value)
