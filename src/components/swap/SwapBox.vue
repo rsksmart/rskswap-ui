@@ -91,7 +91,7 @@
                 <div
                   class="addressBox"
                   id="differentAddress"
-                  :class="handleDifferentDisabled"
+                  :class="handleDifferentDisabledOrInvalid"
                   @click="selectAddressType('different', $event)"
                 >
                   <span v-if="!walletConnected"> different address </span>
@@ -113,6 +113,7 @@
                       class="input"
                       placeholder="paste address"
                       v-model="destinationAccount"
+                      :disabled="this.typeDestinationAddress !== 'different'"
                     />
                     <div @click="pasteClipboard" class="clipboard-icon">
                       <i class="fa-regular fa-paste"></i>
@@ -306,12 +307,18 @@ export default defineComponent({
         this.destinationAccountValid
       );
     },
-    handleDifferentDisabled() {
+    handleDifferentDisabledOrInvalid() {
       if (
         !this.walletConnected ||
         this.typeDestinationAddress !== "different"
       ) {
         return "boxDisabled";
+      }
+      if (
+        !this.destinationAccountValid &&
+        this.destinationAccount.length > 0
+      ) {
+        return "invalidAddress";
       }
 
       return "";
@@ -886,6 +893,10 @@ export default defineComponent({
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+}
+.invalidAddress {
+  background-color: #fce1e1;
+  border: 1px solid #de2238;
 }
 .boxDisabled {
   background-color: #e5e5e5;
