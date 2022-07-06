@@ -203,25 +203,8 @@ export default defineComponent({
     async swapFrom(model) {
       if (model) {
         this.hasAllowance = false;
-        let balance;
-
-        if (model.type === "NATIVE") {
-          if (!model.decimals) {
-            console.error("decimals not defined for model ", model.token);
-          }
-          balance = await this.web3.eth.getBalance(this.account);
-
-          this.swapFrom.balance = new BigNumber(balance).shiftedBy(
-            -model.decimals
-          );
-        } else {
-          const tokenInst = new this.web3.eth.Contract(
-            ERC20_ABI,
-            model.address
-          );
-          balance = await tokenInst.methods.balanceOf(this.account).call();
-          this.swapFrom.balance = this.web3.utils.fromWei(balance);
-        }
+        
+        await this.getUserBalance();
         await this.getMaximumAllowed();
       }
     },
@@ -330,9 +313,30 @@ export default defineComponent({
     },
   },
   methods: {
+    async getUserBalance() {
+      let balance;
+
+      if (this.swapFrom.type === "NATIVE") {
+        if (!this.swapFrom.decimals) {
+          console.error("decimals not defined for model ", this.swapFrom.token);
+        }
+        balance = await this.web3.eth.getBalance(this.account);
+
+        this.swapFrom.balance = new BigNumber(balance).shiftedBy(
+          -this.swapFrom.decimals
+        );
+      } else {
+        const tokenInst = new this.web3.eth.Contract(
+          ERC20_ABI,
+          this.swapFrom.address
+        );
+        balance = await tokenInst.methods.balanceOf(this.account).call();
+        this.swapFrom.balance = this.web3.utils.fromWei(balance);
+      }
+    },
     async initSwapData() {
-      this.swapFrom.value = 0;
-      this.swapTo.value = 0;
+      this.swapFrom.value = null;
+      this.swapTo.value = null;
       this.typeDestinationAddress = "connected";
       await this.getMaximumAllowed();
     },
@@ -729,6 +733,7 @@ export default defineComponent({
       );
       relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
       swapBalance = +(new BigNumber(swapBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
+      await this.getUserBalance();
       let userBalance = this.swapFrom.balance;
 
       this.maximumAllowed = getMaximumAllowed(userBalance, relayerBalance, swapBalance);
