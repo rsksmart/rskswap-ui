@@ -372,7 +372,7 @@ export default defineComponent({
         this.disableSwapButton = false;
         const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
 
-        if (this.swapFrom.value < gasCost + 1) {
+        if (this.swapFrom.value * 0.02 < gasCost) {
           this.SEND_NOTIFICATION({
             message: {
               message: "Value too low",
