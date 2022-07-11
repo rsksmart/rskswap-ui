@@ -10,7 +10,7 @@
             <div class="input-holder">
               <input
                 placeholder="0.00"
-                v-model="swapFrom.value"
+                v-model.number="swapFrom.value"
                 @change="handleSwapInput"
                 @focus="clearSwapFrom"
                 type="number"
@@ -362,29 +362,37 @@ export default defineComponent({
         .toPrecision(18)
         .toString();
     },
-    async handleSwapInput() {
+    async handleSwapInput(e) {
       if (this.swapFrom.value <= 0) {
-        this.disableSwapButton = true;
-        this.swapFrom.value = 0;
-        this.swapTo.value = 0;
+        this.disableAndResetSwapButton();
         return ;
       }
 
       try {
         this.disableSwapButton = false;
         const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
+
+        if (this.swapFrom.value * 0.02 < gasCost) {
+          this.SEND_NOTIFICATION({
+            message: {
+              message: "Value too low",
+              data: "You entered a value lower than the estimated gas cost which causes an invalid conversion ",
+              type: "danger",
+            },
+          });
+          this.disableAndResetSwapButton();
+          return;
+        }
         this.swapTo.value = new BigNumber(this.swapFrom.value)
           .minus(gasCost)
-          .toString();
+          .toString(10);
       } catch (err) {
         console.error("[handleSwapInput] ERROR: ", err);
       }
     },
     async handleSwapOutput() {
       if (this.swapTo.value <= 0) {
-        this.disableSwapButton = true;
-        this.swapFrom.value = 0;
-        this.swapTo.value = 0;
+        this.disableAndResetSwapButton();
         return ;
       }
 
@@ -738,6 +746,11 @@ export default defineComponent({
 
       this.maximumAllowed = getMaximumAllowed(userBalance, relayerBalance, swapBalance);
     },
+    disableAndResetSwapButton() {
+      this.disableSwapButton = true;
+      this.swapFrom.value = 0;
+      this.swapTo.value = 0;
+    },
     ...mapActions([
       constants.START_SPINNER,
       constants.STOP_SPINNER,
@@ -800,6 +813,9 @@ export default defineComponent({
     &:active {
       outline: none;
     }
+  }
+  .invalid-input-border {
+    border: 1px solid $error;
   }
   .input-note {
     font-size: 14px;
