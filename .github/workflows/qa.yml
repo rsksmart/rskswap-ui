@@ -18,7 +18,7 @@ jobs:
       run: yarn
     - name: Build site
       run: |
-        VUE_APP_CHAIN_ID=31 VUE_APP_NETWORK_NAME="RSK QA" VUE_APP_LOCALSTORAGE_NAME=rsk-qa VUE_APP_RELAYER_ADDRESS=0xF7E9E486F7481E899c1f342E0226FCCa689Ff812 VUE_APP_SWAP_ADDRESS=0xd0b16e833bdf85ab330db303c716cf66ff890235 VUE_APP_EXPLORER_ADDRESS="https://explorer.testnet.rsk.co" VUE_APP_EXPLORER_TOKEN_TAB="?__tab=tokens%20transfers" VUE_APP_SECONDS_PER_BLOCK=30 VUE_APP_RELAYER_ENDPOINT="https://backend.testnet.ccbridge.rifgateways.com/v1/relayer" VUE_APP_RPC=https://public-node.testnet.rsk.co VUE_APP_ENV=testnet yarn build
+        VUE_APP_CHAIN_ID=31 VUE_APP_NETWORK_NAME="RSK QA" VUE_APP_LOCALSTORAGE_NAME=rsk-qa VUE_APP_RELAYER_ADDRESS=0x4d47897b1E10b32D95Be9f186310218A29D262A1 VUE_APP_SWAP_ADDRESS=0xd0b16e833bdf85ab330db303c716cf66ff890235 VUE_APP_EXPLORER_ADDRESS="https://explorer.testnet.rsk.co" VUE_APP_EXPLORER_TOKEN_TAB="?__tab=tokens%20transfers" VUE_APP_SECONDS_PER_BLOCK=30 VUE_APP_RELAYER_ENDPOINT="https://backend.testnet.ccbridge.rifgateways.com/v1/relayer" VUE_APP_RPC=https://public-node.testnet.rsk.co VUE_APP_ENV=testnet yarn build
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
