@@ -12,7 +12,6 @@
                 placeholder="0.00"
                 v-model="swapFrom.value"
                 @change="handleSwapInput"
-                @focus="clearSwapFrom"
                 type="number"
                 id="swapInput"
               />
@@ -49,7 +48,6 @@
                 placeholder="0.00"
                 v-model="swapTo.value"
                 @change="handleSwapOutput"
-                @focus="clearSwapTo"
                 type="number"
                 id="amountInput"
               />
@@ -403,12 +401,6 @@ export default defineComponent({
       } catch (err) {
         console.error("[handleSwapOutput] ERROR: ", err);
       }
-    },
-    clearSwapFrom() {
-      this.swapFrom.value = null;
-    },
-    clearSwapTo() {
-      this.swapTo.value = null;
     },
     selectAddressType(type) {
       this.typeDestinationAddress = type;
