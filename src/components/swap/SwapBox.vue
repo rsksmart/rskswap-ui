@@ -384,7 +384,7 @@ export default defineComponent({
         }
         this.swapTo.value = new BigNumber(this.swapFrom.value)
           .minus(gasCost)
-          .toString(10);
+          .toPrecision(6) // 6 because we need to discount 2 from the 0 and the dot (0.something)
       } catch (err) {
         console.error("[handleSwapInput] ERROR: ", err);
       }
@@ -399,12 +399,13 @@ export default defineComponent({
         const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
         this.swapFrom.value = new BigNumber(this.swapTo.value)
             .plus(gasCost)
+            .toPrecision(6) // 6 because we need to discount 2 from the 0 and the dot (0.something)
             .toString();
 
         if (this.swapFrom.value > this.maximumAllowed) {
           this.swapTo.value = new BigNumber(this.maximumAllowed)
             .minus(gasCost)
-            .toString()
+            .toPrecision(6) // 6 because we need to discount 2 from the 0 and the dot (0.something)
         }
       } catch (err) {
         console.error("[handleSwapOutput] ERROR: ", err);
