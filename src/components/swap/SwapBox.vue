@@ -436,7 +436,7 @@ export default defineComponent({
         this.SEND_NOTIFICATION({
           message: {
             message: "Error Message",
-            data: `User has no balance to swap.`,
+            data: `Transaction can't proceed because there is not enough rBTC balance for gas fees.`,
             type: "danger",
           },
         });
