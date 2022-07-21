@@ -346,7 +346,7 @@ export default defineComponent({
       this.destinationAccount = await navigator.clipboard.readText();
     },
     async assignMaxValueToSwapValue() {
-      this.swapFrom.value = this.maximumAllowed;
+      this.swapFrom.value = this.maximumAllowed.toPrecision(6);
       await this.handleSwapInput();
     },
     toggleshowMaxTooltip() {
@@ -740,6 +740,9 @@ export default defineComponent({
       swapBalance = +(new BigNumber(swapBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
       await this.getUserBalance();
       let userBalance = this.swapFrom.balance;
+      console.log('swap b', swapBalance)
+      console.log('relayerBalance b', relayerBalance)
+      console.log('userBalance b', userBalance)
 
       this.maximumAllowed = getMaximumAllowed(userBalance, relayerBalance, swapBalance);
     },
