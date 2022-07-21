@@ -384,7 +384,9 @@ export default defineComponent({
         }
         this.swapTo.value = new BigNumber(this.swapFrom.value)
           .minus(gasCost)
-          .toPrecision(6) // 6 because we need to discount 2 from the 0 and the dot (0.something)
+          .toFixed(8)
+
+        this.swapFrom.value = this.swapFrom.value.toFixed(8)
       } catch (err) {
         console.error("[handleSwapInput] ERROR: ", err);
       }
@@ -399,14 +401,26 @@ export default defineComponent({
         const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
         this.swapFrom.value = new BigNumber(this.swapTo.value)
             .plus(gasCost)
-            .toPrecision(6) // 6 because we need to discount 2 from the 0 and the dot (0.something)
-            .toString();
+            .toFixed(8)
+
+        if (this.swapFrom.value * 0.02 < gasCost) {
+          this.SEND_NOTIFICATION({
+            message: {
+              message: "Value too low",
+              data: "You entered a value lower than the estimated gas cost which causes an invalid conversion ",
+              type: "danger",
+            },
+          });
+          this.disableAndResetSwapButton();
+          return;
+        }
 
         if (this.swapFrom.value > this.maximumAllowed) {
           this.swapTo.value = new BigNumber(this.maximumAllowed)
             .minus(gasCost)
-            .toPrecision(6) // 6 because we need to discount 2 from the 0 and the dot (0.something)
         }
+
+        this.swapTo.value = this.swapTo.value.toFixed(8)
       } catch (err) {
         console.error("[handleSwapOutput] ERROR: ", err);
       }
