@@ -71,7 +71,7 @@ describe("SwapBox.vue", () => {
     await wrapper.vm.$nextTick();
 
     expect(spyGetGasCost).toBeCalledWith(GAS_AVG);
-    expect(wrapper.vm.swapTo.value).toEqual("0.09999780");
+    expect(wrapper.vm.swapTo.value).toEqual("0.099997800000");
   });
 
   it("Should select the correct address type", () => {

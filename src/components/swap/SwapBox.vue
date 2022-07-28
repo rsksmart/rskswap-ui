@@ -384,9 +384,7 @@ export default defineComponent({
         }
         this.swapTo.value = new BigNumber(this.swapFrom.value)
           .minus(gasCost)
-          .toFixed(8)
-
-        this.swapFrom.value = this.swapFrom.value.toFixed(8)
+          .toFixed(12)
       } catch (err) {
         console.error("[handleSwapInput] ERROR: ", err);
       }
@@ -401,7 +399,7 @@ export default defineComponent({
         const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
         this.swapFrom.value = new BigNumber(this.swapTo.value)
             .plus(gasCost)
-            .toFixed(8)
+            .toFixed(12)
 
         if (this.swapFrom.value * 0.02 < gasCost) {
           this.SEND_NOTIFICATION({
@@ -418,9 +416,8 @@ export default defineComponent({
         if (this.swapFrom.value > this.maximumAllowed) {
           this.swapTo.value = new BigNumber(this.maximumAllowed)
             .minus(gasCost)
+            .toFixed(12)
         }
-
-        this.swapTo.value = this.swapTo.value.toFixed(8)
       } catch (err) {
         console.error("[handleSwapOutput] ERROR: ", err);
       }
