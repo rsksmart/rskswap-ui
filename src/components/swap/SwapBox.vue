@@ -14,6 +14,7 @@
                 @change="handleSwapInput"
                 type="number"
                 id="swapInput"
+                :class="shrinkSwapToInputText"
               />
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
@@ -50,6 +51,7 @@
                 @change="handleSwapOutput"
                 type="number"
                 id="amountInput"
+                :class="shrinkSwapFromInputText"
               />
               <div
                 class="w-60 d-flex flex-row align-items-center justify-content-end mr-3"
@@ -310,6 +312,16 @@ export default defineComponent({
         ? this.destinationAccount
         : this.account;
     },
+    shrinkSwapToInputText() {
+      if (this.swapTo.value && this.swapTo.value.toString().length > 14)
+        return 'shrink-text';
+      return '';
+    },
+    shrinkSwapFromInputText() {
+      if (this.swapFrom.value && this.swapFrom.value.toString().length > 14)
+        return 'shrink-text';
+      return '';
+    },
   },
   methods: {
     async getUserBalance() {
@@ -384,7 +396,8 @@ export default defineComponent({
         }
         this.swapTo.value = new BigNumber(this.swapFrom.value)
           .minus(gasCost)
-          .toFixed(12)
+          .toString()
+          .slice(0,20)
       } catch (err) {
         console.error("[handleSwapInput] ERROR: ", err);
       }
@@ -399,7 +412,8 @@ export default defineComponent({
         const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
         this.swapFrom.value = new BigNumber(this.swapTo.value)
             .plus(gasCost)
-            .toFixed(12)
+            .toString()
+            .slice(0,20)
 
         if (this.swapFrom.value * 0.02 < gasCost) {
           this.SEND_NOTIFICATION({
@@ -416,7 +430,8 @@ export default defineComponent({
         if (this.swapFrom.value > this.maximumAllowed) {
           this.swapTo.value = new BigNumber(this.maximumAllowed)
             .minus(gasCost)
-            .toFixed(12)
+            .toString()
+            .slice(0,20)
         }
       } catch (err) {
         console.error("[handleSwapOutput] ERROR: ", err);
@@ -951,5 +966,8 @@ export default defineComponent({
 }
 .fa-check {
   color: #69ed6f;
+}
+.shrink-text {
+  font-size: 0.75rem !important;
 }
 </style>
