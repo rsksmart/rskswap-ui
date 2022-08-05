@@ -18,6 +18,10 @@ describe("SwapBox.vue", () => {
   let wrapper: VueWrapper<any>;
 
   beforeEach(async () => {
+    window.ethereum = {
+      on: jest.fn(),
+    };
+
     wrapper = shallowMount(SwapBox, {
       data() {
         return {
@@ -43,7 +47,7 @@ describe("SwapBox.vue", () => {
       },
     });
     await wrapper.setData({
-      web3
+      web3,
     });
   });
 
@@ -60,12 +64,12 @@ describe("SwapBox.vue", () => {
   it("Should get correct gas price", async () => {
     const spyGetGasCost = jest.spyOn(wrapper.vm, "getGasCostWithDecimals");
     const input = wrapper.find("#swapInput");
-    
-    await wrapper.setData({ 'swapFrom.value': "0.1" });
+
+    await wrapper.setData({ "swapFrom.value": "0.1" });
     await wrapper.vm.$nextTick();
 
     input.setValue(0.1);
-    
+
     await wrapper.setData({ maximumAllowed: 1 });
 
     await wrapper.vm.$nextTick();
@@ -75,13 +79,13 @@ describe("SwapBox.vue", () => {
   });
 
   it("Should select the correct address type", () => {
-    expect(wrapper.vm.typeDestinationAddress).toEqual('connected');
+    expect(wrapper.vm.typeDestinationAddress).toEqual("connected");
     const connectedAddressBox = wrapper.find("#connectedAddress");
     const differentAddressBox = wrapper.find("#differentAddress");
-    differentAddressBox.trigger('click');
-    expect(wrapper.vm.typeDestinationAddress).toEqual('different');
-    connectedAddressBox.trigger('click');
-    expect(wrapper.vm.typeDestinationAddress).toEqual('connected');
+    differentAddressBox.trigger("click");
+    expect(wrapper.vm.typeDestinationAddress).toEqual("different");
+    connectedAddressBox.trigger("click");
+    expect(wrapper.vm.typeDestinationAddress).toEqual("connected");
   });
 
   it("Swap button needs to be disabled", () => {
