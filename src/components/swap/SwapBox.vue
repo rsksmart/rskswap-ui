@@ -140,7 +140,8 @@
         <template #body>
           <p><b>Why?</b></p>
           <p>
-            For security a double signature mechanism is required when performing a swap operation.
+            For security a double signature mechanism is required when
+            performing a swap operation.
           </p>
         </template>
       </InfoModal>
@@ -166,8 +167,8 @@ import { txExplorerLink } from "@/utils/address-helpers";
 import * as constants from "@/store/constants";
 import { MAX_SWAP_AMOUNT, VALID_CODES } from "@/constants/variables";
 import { GAS_AVG } from "@/utils/transactions";
-import { parseMessageToSign } from '@/helpers/SignHelper';
-import { getMaximumAllowed } from '@/helpers/SwapHelper';
+import { parseMessageToSign } from "@/helpers/SignHelper";
+import { getMaximumAllowed } from "@/helpers/SwapHelper";
 
 const { mapState, mapActions } = createNamespacedHelpers("session");
 
@@ -180,7 +181,7 @@ export default defineComponent({
   watch: {
     "swapFrom.value"(value) {
       if (value <= 0) {
-        return ;
+        return;
       }
 
       if (value > this.maximumAllowed) {
@@ -203,7 +204,7 @@ export default defineComponent({
     async swapFrom(model) {
       if (model) {
         this.hasAllowance = false;
-        
+
         await this.getUserBalance();
         await this.getMaximumAllowed();
       }
@@ -278,7 +279,10 @@ export default defineComponent({
       const DISABLE_SWAP_BUTTON = this.disableSwapButton;
 
       return (
-        WALLET_IS_NOT_CONNECTED || IS_SPINNER_RUNNING || IS_BUTTON_SWAP_DISABLED || DISABLE_SWAP_BUTTON
+        WALLET_IS_NOT_CONNECTED ||
+        IS_SPINNER_RUNNING ||
+        IS_BUTTON_SWAP_DISABLED ||
+        DISABLE_SWAP_BUTTON
       );
     },
     isConnectedAndAccountPresent() {
@@ -297,10 +301,7 @@ export default defineComponent({
       ) {
         return "boxDisabled";
       }
-      if (
-        !this.destinationAccountValid &&
-        this.destinationAccount.length > 0
-      ) {
+      if (!this.destinationAccountValid && this.destinationAccount.length > 0) {
         return "invalidAddress";
       }
 
@@ -363,41 +364,41 @@ export default defineComponent({
         .toString();
     },
     async handleSwapInput() {
-      if (this.swapFrom.value <= 0) {
-        this.disableSwapButton = true;
-        this.swapFrom.value = 0;
-        this.swapTo.value = 0;
-        return ;
-      }
-
       try {
         this.disableSwapButton = false;
         const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
         this.swapTo.value = new BigNumber(this.swapFrom.value)
           .minus(gasCost)
-          .toString();
+          .toString(10);
+
+        if (this.swapTo.value < 0) {
+          this.disableSwapButton = true;
+          this.swapFrom.value = 0;
+          this.swapTo.value = 0;
+          return;
+        }
       } catch (err) {
         console.error("[handleSwapInput] ERROR: ", err);
       }
     },
     async handleSwapOutput() {
-      if (this.swapTo.value <= 0) {
+      if (this.swapTo.value <= 0 || this.swapFrom.value < 0.00002) {
         this.disableSwapButton = true;
         this.swapFrom.value = 0;
         this.swapTo.value = 0;
-        return ;
+        return;
       }
 
       try {
         const gasCost = await this.getGasCostWithDecimals(GAS_AVG);
         this.swapFrom.value = new BigNumber(this.swapTo.value)
-            .plus(gasCost)
-            .toString();
+          .plus(gasCost)
+          .toString();
 
         if (this.swapFrom.value > this.maximumAllowed) {
           this.swapTo.value = new BigNumber(this.maximumAllowed)
             .minus(gasCost)
-            .toString()
+            .toString();
         }
       } catch (err) {
         console.error("[handleSwapOutput] ERROR: ", err);
@@ -415,7 +416,7 @@ export default defineComponent({
     },
     async onSwap() {
       const userBalance = await this.web3.eth.getBalance(this.account);
-      
+
       if (!this.swapFrom.value || this.swapFrom.value <= 0) {
         this.SEND_NOTIFICATION({
           message: {
@@ -731,18 +732,32 @@ export default defineComponent({
       let swapBalance = await this.web3.eth.getBalance(
         process.env.VUE_APP_SWAP_ADDRESS
       );
-      relayerBalance = +(new BigNumber(relayerBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
-      swapBalance = +(new BigNumber(swapBalance).shiftedBy(-RBTC_TOKEN.decimals).toString());
+      relayerBalance = +new BigNumber(relayerBalance)
+        .shiftedBy(-RBTC_TOKEN.decimals)
+        .toString();
+      swapBalance = +new BigNumber(swapBalance)
+        .shiftedBy(-RBTC_TOKEN.decimals)
+        .toString();
       await this.getUserBalance();
       let userBalance = this.swapFrom.balance;
 
-      this.maximumAllowed = getMaximumAllowed(userBalance, relayerBalance, swapBalance);
+      this.maximumAllowed = getMaximumAllowed(
+        userBalance,
+        relayerBalance,
+        swapBalance
+      );
     },
     ...mapActions([
       constants.START_SPINNER,
       constants.STOP_SPINNER,
       constants.SEND_NOTIFICATION,
+      constants.WEB3_SESSION_GET_ACCOUNT,
     ]),
+  },
+  mounted() {
+    window.ethereum.on("accountsChanged", async () => {
+      this.WEB3_SESSION_GET_ACCOUNT();
+    });
   },
 });
 </script>
